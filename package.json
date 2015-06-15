@@ -1,0 +1,13 @@
+{
+  "name": "result-upload-service",
+  "private": true,
+  "version": "0.0.1",
+  "description": "GAIA Result Upload Service",
+  "author": "Jaroslav Libak <jaroslav.libak@hp.com>",
+  "dependencies": {
+    "express": "4.12.4",
+    "amqplib": "0.3.2",
+    "oauth2-server": "2.4.0",
+    "body-parser": "1.13.0"
+  }
+}
