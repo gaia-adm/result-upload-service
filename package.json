@@ -6,6 +6,8 @@
   "author": "Jaroslav Libak <jaroslav.libak@hp.com>",
   "dependencies": {
     "express": "4.12.4",
+    "http-status-codes": "1.0.5",
+    "node-uuid": "1.4.3",
     "amqplib": "0.3.2",
     "oauth2-server": "2.4.0",
     "body-parser": "1.13.0"
