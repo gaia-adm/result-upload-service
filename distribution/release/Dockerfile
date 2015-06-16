@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:trusty
 
 ENV http_proxy 'http://proxy.bbn.hp.com:8080'
 ENV https_proxy 'http://proxy.bbn.hp.com:8080'
