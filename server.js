@@ -21,6 +21,7 @@ function exitOnSignal(signal) {
 
 app.use(auth.authorise);
 app.use(require('./controllers'));
+app.use(auth.errorHandler);
 app.use(expressErrorHandler);
 
 function expressErrorHandler(err, req, res, next) {

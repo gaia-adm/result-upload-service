@@ -48,7 +48,7 @@ function initChannel(conn) {
 function initAmq() {
     var credentials = getAmqCredentials();
     var url = 'amqp://' + credentials.username + ':' + credentials.password +
-            '@amqhost:5672?frameMax=0x1000&heartbeat=30';
+                '@amqserver:5672?frameMax=0x1000&heartbeat=30';
 
     return amqp.connect(url).then(function(conn) {
         // TODO: handle reconnect in case close caused by certain errors (not invalid credentials)
