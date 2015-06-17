@@ -12,29 +12,29 @@ var baseStoragePath;
 function storeFile(is, callback) {
     var os = createWriteStream();
 
-    function onerror(err) {
+    function onError(err) {
         is.unpipe(os);
         callback(err);
     }
-    function onend() {
+    function onEnd() {
         callback(null, os.path);
     }
     function cleanup() {
-        is.removeListener('end', onend);
+        is.removeListener('end', onEnd);
 
         is.removeListener('end', cleanup);
         is.removeListener('close', cleanup);
 
-        is.removeListener('error', onerror);
-        os.removeListener('error', onerror);
+        is.removeListener('error', onError);
+        os.removeListener('error', onError);
     }
-    is.on('end', onend);
+    is.on('end', onEnd);
 
     is.on('end', cleanup);
     is.on('close', cleanup);
 
-    is.on('error', onerror);
-    os.on('error', onerror);
+    is.on('error', onError);
+    os.on('error', onError);
 
     // TODO: handle upload file limits
     is.pipe(os);

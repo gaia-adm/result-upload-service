@@ -3,6 +3,7 @@
 var express = require('express'), router = express.Router();
 var HttpStatus = require('http-status-codes');
 var fileStorage = require('./file-storage');
+var notification = require('./notification');
 
 var MAX_PARAM_LEN = 100;
 
@@ -73,12 +74,19 @@ function receiveFile(metadata, req, res) {
             res.status(HttpStatus.INTERNAL_SERVER_ERROR);
             // TODO: in production mode don't send stack trace
             res.json({error: err.message, stacktrace: err.stack});
-            return;
         } else {
             metadata.path = path;
-            // TODO: send notification with metadata to RabbitMQ
-            res.status(HttpStatus.OK);
-            res.send();
+            notification.send(metadata, function(err) {
+                if (err) {
+                    console.error(err.stack);
+                    res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+                    // TODO: in production mode don't send stack trace
+                    res.json({error: err.message, stacktrace: err.stack});
+                } else {
+                    res.status(HttpStatus.OK);
+                    res.send();
+                }
+            });
         }
     });
 }
