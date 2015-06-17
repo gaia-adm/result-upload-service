@@ -4,6 +4,7 @@ var express = require('express'), app = express();
 var HttpStatus = require('http-status-codes');
 var notification = require('./controllers/notification');
 var when = require('when');
+var auth = require('./middlewares/auth');
 
 var PORT = 8080;
 
@@ -18,6 +19,7 @@ function exitOnSignal(signal) {
     });
 }
 
+app.use(auth.authorise);
 app.use(require('./controllers'));
 app.use(expressErrorHandler);
 
