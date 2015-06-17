@@ -4,8 +4,7 @@ var express = require('express'), router = express.Router();
 var HttpStatus = require('http-status-codes');
 var fileStorage = require('./file-storage');
 var notification = require('./notification');
-
-var MAX_PARAM_LEN = 100;
+var validate = require("validate.js");
 
 // REST endpoints handling file upload
 
@@ -17,10 +16,9 @@ router.post('/v1/upload-file', function(req, res) {
         res.json({error : 'ContentType \'' + contentType + '\' is not yet supported'});
     } else if (req.is('application/*') || req.is('text/*')) {
         var metadata = getFileMetadata(req);
-        try {
-            validateMetadata(metadata);
-        } catch (err) {
-            res.status(HttpStatus.BAD_REQUEST).json({error : err.message});
+        var validationResult = validateMetadata(metadata);
+        if (validationResult) {
+            res.status(HttpStatus.BAD_REQUEST).json({error : validationResult});
             return;
         }
         metadata.contentType = contentType;
@@ -46,25 +44,23 @@ function getFileMetadata(req) {
     };
 }
 
-// returns true if metadata is valid, throws Error otherwise
+// returns nothing if metadata is valid, returns an object with {<attribute>: [<error>, <error>, ...]} otherwise
 function validateMetadata(fileMetadata) {
-    var requiredFields = ['metric', 'category', 'name'];
-    requiredFields.forEach(function(requiredField) {
-        if (fileMetadata.hasOwnProperty(requiredField)) {
-            var value = fileMetadata[requiredField];
-            if (value === undefined || value === null) {
-                throw new Error('Missing parameter \'' + requiredField + '\'');
-            }
-            if (value.length === 0) {
-                throw new Error('Value of \'' + requiredField + '\' must not be empty');
-            }
-            if (value.length > MAX_PARAM_LEN) {
-                throw new Error('Value of \'' + requiredField + '\' exceeds ' + MAX_PARAM_LEN + ' characters');
-            }
-        } else {
-            throw new Error('Missing parameter \'' + requiredField + '\'');
+    var constraints = {
+        metric: {
+            presence: true, length: {maximum: 100}
+        },
+        category: {
+            presence: true, length: {maximum: 100}
+        },
+        name: {
+            presence: true, length: {maximum: 100}
+        },
+        timestamp: {
+            numericality: {greaterThan: 0, onlyInteger: true}
         }
-    })
+    };
+    return validate(fileMetadata, constraints);
 }
 
 function receiveFile(metadata, req, res) {
