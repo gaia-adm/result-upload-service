@@ -2,7 +2,7 @@
  * Responsible for handling file upload. Accepted file must be saved in file storage and notification be sent to result processing service.
  * @module controllers/file-upload
  */
-'use strict';
+"use strict";
 
 var log4js = require('log4js');
 var express = require('express'), router = express.Router();
@@ -43,7 +43,7 @@ router.post('/v1/upload-file', function(req, res) {
  */
 function getFileMetadata(req) {
     var tagArray = [], tags = req.query.tags;
-    if (tags !== undefined && tags != null) {
+    if (tags !== undefined && tags !== null) {
         tagArray = tags.toString().split(',');
     }
     return {

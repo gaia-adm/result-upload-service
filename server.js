@@ -3,7 +3,7 @@
  * must be in format supported by GAIA result processors. The file is information discovered from external system - through REST API
  * or as an event.
  */
-'use strict';
+"use strict";
 
 var log4js = require('log4js');
 // replaces console.log function with log4j
@@ -41,9 +41,8 @@ app.use(defaultErrorHandler);
  * @param err instance of error
  * @param req express request
  * @param res express response
- * @param next next express handler. To be invoked only if we can't handle error.
  */
-function defaultErrorHandler(err, req, res, next) {
+function defaultErrorHandler(err, req, res) {
     logger.error('Unhandled exception in REST call \'' + req.path + '\'');
     logger.error(err.stack);
     res.status(HttpStatus.INTERNAL_SERVER_ERROR);

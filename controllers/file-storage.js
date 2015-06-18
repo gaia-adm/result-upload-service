@@ -2,7 +2,7 @@
  * File storage module. Responsible for storing files to be processed by result processing service.
  * @module controllers/file-storage
  */
-'use strict';
+"use strict";
 
 var log4js = require('log4js');
 var fs = require('fs');

@@ -2,7 +2,7 @@
  * Authentication handling module. Contains code to integrate authentication into express library.
  * @module middlewares/auth
  */
-'use strict';
+"use strict";
 
 var log4js = require('log4js');
 var oauthserver = require('oauth2-server');
@@ -29,7 +29,7 @@ function getOAuthAccessToken(bearerToken, callback) {
             logger.error(err.stack);
             callback(new VError(err, 'Failed to verify bearer token due to error'));
         } else {
-            if (response.statusCode == 200) {
+            if (response.statusCode === 200) {
                 callback(false, {accessToken: bearerToken, expires: null});
             } else {
                 logger.warn('Unauthorized token \'' + bearerToken + '\', status code '+ response.statusCode);

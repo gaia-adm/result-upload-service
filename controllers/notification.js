@@ -2,7 +2,7 @@
  * Responsible for sending notifications to result processing service with information what to process.
  * @module controllers/notification
  */
-'use strict';
+"use strict";
 
 var log4js = require('log4js');
 var amqp = require('amqplib');
@@ -25,7 +25,7 @@ function getAmqCredentials() {
     }
     return {
         username: process.env.AMQ_USER, password: process.env.AMQ_PASSWORD
-    }
+    };
 }
 
 /**
