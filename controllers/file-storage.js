@@ -1,10 +1,12 @@
 'use strict';
 
+var log4js = require('log4js');
 var fs = require('fs');
 var path = require('path');
 var cnst = require('constants');
 var uuid = require('node-uuid');
 
+var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
 var baseStoragePath;
 
@@ -60,7 +62,7 @@ function initFileStorage() {
     // TODO: support new baseStoragePath after there are too many files in directory?
     baseStoragePath = path.join(process.env.STORAGE_PATH, uuid.v4());
     fs.mkdirSync(baseStoragePath);
-    console.log('Using ' + baseStoragePath + ' for storing uploaded files');
+    logger.info('Using ' + baseStoragePath + ' for storing uploaded files');
 }
 
 initFileStorage();

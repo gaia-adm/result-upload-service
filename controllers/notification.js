@@ -1,8 +1,10 @@
 'use strict';
 
+var log4js = require('log4js');
 var amqp = require('amqplib');
 var VError = require('verror');
 
+var logger = log4js.getLogger('notification.js');
 var channel = null;
 
 function getAmqCredentials() {
@@ -25,7 +27,7 @@ function initChannel(conn) {
         }
 
         function onError(err) {
-            console.error(err.stack);
+            logger.error(err.stack);
         }
 
         function cleanup() {
@@ -56,7 +58,7 @@ function initAmq() {
         }
 
         function onError(err) {
-            console.error(err.stack);
+            logger.error(err.stack);
         }
 
         function cleanup() {
@@ -71,11 +73,11 @@ function initAmq() {
 
         conn.on('close', cleanup);
 
-        console.log('Connected to AMQ');
+        logger.info('Connected to AMQ');
 
         return initChannel(conn);
     }, function (err) {
-        console.error(err.stack);
+        logger.error(err.stack);
         throw new VError(err, 'Failed to connect to AMQ');
     });
 }

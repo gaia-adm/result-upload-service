@@ -1,5 +1,9 @@
 'use strict';
 
+var log4js = require('log4js');
+// replaces console.log function with log4j
+log4js.replaceConsole();
+
 var express = require('express'), app = express();
 var HttpStatus = require('http-status-codes');
 var notification = require('./controllers/notification');
@@ -8,13 +12,15 @@ var auth = require('./middlewares/auth');
 
 var PORT = 8080;
 
+var logger = log4js.getLogger('server.js');
+
 exitOnSignal('SIGINT');
 exitOnSignal('SIGTERM');
 
 // TODO: use grace or other module for graceful shutdown (close sockets etc) - not easy as we need to exec async code in multiple modules
 function exitOnSignal(signal) {
     process.on(signal, function() {
-        console.log('Caught ' + signal + ', exiting');
+        logger.debug('Caught ' + signal + ', exiting');
         process.exit(1);
     });
 }
@@ -22,11 +28,11 @@ function exitOnSignal(signal) {
 app.use(auth.authorise);
 app.use(require('./controllers'));
 app.use(auth.errorHandler);
-app.use(expressErrorHandler);
+app.use(defaultErrorHandler);
 
-function expressErrorHandler(err, req, res, next) {
-    console.error('Unhandled exception in REST call \'' + req.path + '\'');
-    console.error(err.stack);
+function defaultErrorHandler(err, req, res, next) {
+    logger.error('Unhandled exception in REST call \'' + req.path + '\'');
+    logger.error(err.stack);
     res.status(HttpStatus.INTERNAL_SERVER_ERROR);
     res.contentType = 'application/json';
     // TODO: in production mode don't send stack trace
@@ -36,10 +42,10 @@ function expressErrorHandler(err, req, res, next) {
 // add any async initializations here
 when.all([notification.initAmq()]).then(function() {
     app.listen(PORT, function() {
-        console.log('Running on http://localhost:' + PORT);
+        logger.info('Running on http://localhost:' + PORT);
     });
 }, function(err) {
-    console.error('Result upload service initialization failure');
-    console.error(err.stack);
+    logger.error('Result upload service initialization failure');
+    logger.error(err.stack);
     process.exit(1);
 });

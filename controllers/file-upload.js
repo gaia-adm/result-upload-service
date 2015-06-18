@@ -1,11 +1,13 @@
 'use strict';
 
+var log4js = require('log4js');
 var express = require('express'), router = express.Router();
 var HttpStatus = require('http-status-codes');
 var fileStorage = require('./file-storage');
 var notification = require('./notification');
 var validate = require("validate.js");
 
+var logger = log4js.getLogger('file-upload.js');
 // REST endpoints handling file upload
 
 router.post('/v1/upload-file', function(req, res) {
@@ -66,7 +68,7 @@ function validateMetadata(fileMetadata) {
 function receiveFile(metadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {
-            console.error(err.stack);
+            logger.error(err.stack);
             res.status(HttpStatus.INTERNAL_SERVER_ERROR);
             // TODO: in production mode don't send stack trace
             res.json({error: err.message, stacktrace: err.stack});
@@ -74,7 +76,7 @@ function receiveFile(metadata, req, res) {
             metadata.path = path;
             notification.send(metadata, function(err) {
                 if (err) {
-                    console.error(err.stack);
+                    logger.error(err.stack);
                     res.status(HttpStatus.INTERNAL_SERVER_ERROR);
                     // TODO: in production mode don't send stack trace
                     res.json({error: err.message, stacktrace: err.stack});
