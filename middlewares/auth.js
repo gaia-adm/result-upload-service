@@ -2,7 +2,7 @@
  * Authentication handling module. Contains code to integrate authentication into express library.
  * @module middlewares/auth
  */
-"use strict";
+'use strict';
 
 var log4js = require('log4js');
 var oauthserver = require('oauth2-server');

@@ -3,7 +3,7 @@
  * must be in format supported by GAIA result processors. The file is information discovered from external system - through REST API
  * or as an event.
  */
-"use strict";
+'use strict';
 
 var log4js = require('log4js');
 // replaces console.log function with log4j

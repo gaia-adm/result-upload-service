@@ -2,7 +2,7 @@
  * Responsible for sending notifications to result processing service with information what to process.
  * @module controllers/notification
  */
-"use strict";
+'use strict';
 
 var log4js = require('log4js');
 var amqp = require('amqplib');

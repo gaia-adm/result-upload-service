@@ -2,7 +2,7 @@
  * Responsible for handling file upload. Accepted file must be saved in file storage and notification be sent to result processing service.
  * @module controllers/file-upload
  */
-"use strict";
+'use strict';
 
 var log4js = require('log4js');
 var express = require('express'), router = express.Router();
