@@ -1,3 +1,7 @@
+/**
+ * File storage module. Responsible for storing files to be processed by result processing service.
+ * @module controllers/file-storage
+ */
 'use strict';
 
 var log4js = require('log4js');
@@ -10,7 +14,11 @@ var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
 var baseStoragePath;
 
-// handles storage of data from input stream into file and notifies callback upon completion/error
+/**
+ * Handles storage of data from input stream into file and notifies callback upon completion/error.
+ * @param is input stream
+ * @param callback
+ */
 function storeFile(is, callback) {
     var os = createWriteStream();
 
@@ -42,16 +50,27 @@ function storeFile(is, callback) {
     is.pipe(os);
 }
 
+/**
+ * Creates write stream. File will have unique name.
+ * @returns output stream
+ */
 function createWriteStream() {
     // TODO: handle uuid collision?
     return fs.createWriteStream(generateFilename(), {flags: RDWR_EXCL, mode: 600});
 }
 
-// TODO: should accept some tenantId?
+/**
+ * Generates new unique file name.
+ * @returns file name
+ */
 function generateFilename() {
+    // TODO: should accept some tenantId?
     return path.join(baseStoragePath, uuid.v4());
 }
 
+/**
+ * Initializes the file storage module.
+ */
 function initFileStorage() {
     if (!process.env.STORAGE_PATH) {
         throw new Error('STORAGE_PATH environment variable is not specified');
@@ -67,4 +86,7 @@ function initFileStorage() {
 
 initFileStorage();
 
-exports = module.exports = {storeFile : storeFile};
+/**
+ * Handles storage of data from input stream into file and notifies callback upon completion/error.
+ */
+exports.storeFile = storeFile;

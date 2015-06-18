@@ -1,3 +1,7 @@
+/**
+ * Responsible for handling file upload. Accepted file must be saved in file storage and notification be sent to result processing service.
+ * @module controllers/file-upload
+ */
 'use strict';
 
 var log4js = require('log4js');
@@ -32,6 +36,11 @@ router.post('/v1/upload-file', function(req, res) {
     }
 });
 
+/**
+ * Extracts file metadata from express request
+ * @param req express request
+ * @returns object with file metadata
+ */
 function getFileMetadata(req) {
     var tagArray = [], tags = req.query.tags;
     if (tags !== undefined && tags != null) {
@@ -46,7 +55,12 @@ function getFileMetadata(req) {
     };
 }
 
-// returns nothing if metadata is valid, returns an object with {<attribute>: [<error>, <error>, ...]} otherwise
+/**
+ * Performs validation of file metadata.
+ *
+ * @param fileMetadata object with file metadata
+ * @returns nothing if metadata is valid or object with attributes having arrays of errors if there was an error
+ */
 function validateMetadata(fileMetadata) {
     var constraints = {
         metric: {
@@ -65,6 +79,13 @@ function validateMetadata(fileMetadata) {
     return validate(fileMetadata, constraints);
 }
 
+/**
+ * Handles reception of file.
+ *
+ * @param metadata object with file metadata
+ * @param req express request
+ * @param res express response
+ */
 function receiveFile(metadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {

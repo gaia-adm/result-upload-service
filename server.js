@@ -1,3 +1,8 @@
+/**
+ * GAIA result upload service. It receives files containing measures that need to be processed and pushed to metrics API. The files
+ * must be in format supported by GAIA result processors. The file is information discovered from external system - through REST API
+ * or as an event.
+ */
 'use strict';
 
 var log4js = require('log4js');
@@ -30,6 +35,14 @@ app.use(require('./controllers'));
 app.use(auth.errorHandler);
 app.use(defaultErrorHandler);
 
+/**
+ * Default error handler for REST. Receives errors not caught by route handler.
+ *
+ * @param err instance of error
+ * @param req express request
+ * @param res express response
+ * @param next next express handler. To be invoked only if we can't handle error.
+ */
 function defaultErrorHandler(err, req, res, next) {
     logger.error('Unhandled exception in REST call \'' + req.path + '\'');
     logger.error(err.stack);
@@ -39,13 +52,20 @@ function defaultErrorHandler(err, req, res, next) {
     res.send({error: err.message, stacktrace: err.stack});
 }
 
-// add any async initializations here
-when.all([notification.initAmq()]).then(function() {
-    app.listen(PORT, function() {
-        logger.info('Running on http://localhost:' + PORT);
+/**
+ * Initializes the server. Initializes any dependencies first before starting to listen on server socket.
+ */
+function initServer() {
+    // add any async initializations here
+    when.all([notification.initAmq()]).then(function() {
+        app.listen(PORT, function() {
+            logger.info('Running on http://localhost:' + PORT);
+        });
+    }, function(err) {
+        logger.error('Result upload service initialization failure');
+        logger.error(err.stack);
+        process.exit(1);
     });
-}, function(err) {
-    logger.error('Result upload service initialization failure');
-    logger.error(err.stack);
-    process.exit(1);
-});
+}
+
+initServer();

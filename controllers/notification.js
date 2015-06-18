@@ -1,3 +1,7 @@
+/**
+ * Responsible for sending notifications to result processing service with information what to process.
+ * @module controllers/notification
+ */
 'use strict';
 
 var log4js = require('log4js');
@@ -7,6 +11,11 @@ var VError = require('verror');
 var logger = log4js.getLogger('notification.js');
 var channel = null;
 
+/**
+ * Collects credentials for connection to AMQ (RabbitMQ).
+ *
+ * @returns {{username: *, password: *}}
+ */
 function getAmqCredentials() {
     if (!process.env.AMQ_USER) {
         throw new Error('AMQ_USER environment variable is not specified');
@@ -19,6 +28,12 @@ function getAmqCredentials() {
     }
 }
 
+/**
+ * Creates AMQ channel on which messages can be sent.
+ *
+ * @param conn AMQ connection
+ * @returns promise
+ */
 function initChannel(conn) {
     return conn.createConfirmChannel().then(function(ch) {
         // TODO: handle channel recreation in case of close caused by error
@@ -46,7 +61,10 @@ function initChannel(conn) {
     });
 }
 
-// initializes connection to RabbitMQ and returns promise to allow waiting for initialization complection
+/**
+ * Initializes connection to RabbitMQ and returns promise to allow waiting for initialization completion.
+ * @returns promise
+ */
 function initAmq() {
     var credentials = getAmqCredentials();
     var url = 'amqp://' + credentials.username + ':' + credentials.password +
@@ -82,7 +100,11 @@ function initAmq() {
     });
 }
 
-// sends message to RabbitMQ
+/**
+ * Sends notification to result processing service.
+ * @param fileMetadata object with file metadata - path, metric, category etc.
+ * @param callback
+ */
 function send(fileMetadata, callback) {
     if (!channel) {
         throw new Error('Notification channel is not ready');
@@ -91,9 +113,16 @@ function send(fileMetadata, callback) {
             {mandatory: true, persistent: true}, callback);
 }
 
+/**
+ * Creates routing key for given file metadata. Determines what queue the notification goes to.
+ * @param fileMetadata object with file metadata - path, metric, category etc.
+ * @returns {string} routing key
+ */
 function getRoutingKey(fileMetadata) {
     return fileMetadata.metric + '/' + fileMetadata.category;
 }
 
+/** To be called to initialize the notification module. This involves opening connection to RabbitMQ. Returns promise. */
 exports.initAmq = initAmq;
+/** Sends notification to result processing service. */
 exports.send = send;
