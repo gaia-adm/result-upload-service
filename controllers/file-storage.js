@@ -26,25 +26,26 @@ function storeFile(is, callback) {
         is.unpipe(os);
         callback(err);
     }
-    function onEnd() {
+    function onFinish() {
         callback(null, os.path);
     }
     function cleanup() {
-        is.removeListener('end', onEnd);
-
-        is.removeListener('end', cleanup);
-        is.removeListener('close', cleanup);
-
         is.removeListener('error', onError);
-        os.removeListener('error', onError);
-    }
-    is.on('end', onEnd);
 
-    is.on('end', cleanup);
-    is.on('close', cleanup);
+        os.removeListener('error', onError);
+        os.removeListener('finish', onFinish);
+
+        os.removeListener('error', cleanup);
+        os.removeListener('finish', cleanup);
+    }
 
     is.on('error', onError);
+
     os.on('error', onError);
+    os.on('finish', onFinish);
+
+    os.on('error', cleanup);
+    os.on('finish', cleanup);
 
     // TODO: handle upload file limits
     is.pipe(os);
