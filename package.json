@@ -15,13 +15,17 @@
     "verror": "1.6.0",
     "validate.js": "0.7.1",
     "oauth2-server": "2.4.0",
-    "body-parser": "1.13.0"
+    "body-parser": "1.13.0",
+    "URIjs": "1.15.1"
   },
   "devDependencies": {
+    "chai": "^3.0.0",
     "grunt": "^0.4.5",
-    "grunt-jsdoc": "^0.6.7",
     "grunt-contrib-jshint": "^0.11.2",
-    "grunt-contrib-nodeunit": "^0.4.1",
-    "jsdoc": "^3.3.2"
+    "grunt-mocha-test": "^0.12.7",
+    "grunt-jsdoc": "^0.6.7",
+    "jsdoc": "^3.3.2",
+    "randomstring": "^1.0.6",
+    "mocha": "^2.2.5"
   }
 }

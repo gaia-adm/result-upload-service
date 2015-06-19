@@ -58,6 +58,7 @@ function initChannel(conn) {
         ch.on('close', cleanup);
 
         channel = ch;
+        return ch.assertExchange('result-upload', 'direct', {durable: true})
     });
 }
 
@@ -109,7 +110,7 @@ function send(fileMetadata, callback) {
     if (!channel) {
         throw new Error('Notification channel is not ready');
     }
-    channel.publish('', getRoutingKey(fileMetadata), new Buffer(JSON.stringify(fileMetadata)),
+    channel.publish('result-upload', getRoutingKey(fileMetadata), new Buffer(JSON.stringify(fileMetadata)),
             {mandatory: true, persistent: true}, callback);
 }
 
