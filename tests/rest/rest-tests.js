@@ -246,19 +246,19 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                 var content = fs.readFileSync(fileMetadata.path).toString();
                 assert.strictEqual(content, fileBody, 'Stored file contents doesnt match');
                 done();
-            });
-
-            // upload file
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: metric, category: category, name: 3, timestamp: new Date().getTime()}, body: fileBody
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 200);
+            }).then(function() {
+                // upload file
+                var options = {
+                    uri: getServiceUri(), method: 'POST', headers: {
+                        'content-type': 'text/plain'
+                    }, auth: {
+                        sendImmediately: true, bearer: accessToken
+                    }, qs: {metric: metric, category: category, name: 3, timestamp: new Date().getTime()}, body: fileBody
+                };
+                request(options, function(err, response, body) {
+                    assert.notOk(err, 'No error was expected');
+                    assert.strictEqual(response.statusCode, 200);
+                });
             });
         });
 
@@ -269,7 +269,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
         });
 
         function consumeMessages(routingKey, consumer) {
-            amqCh.bindQueue(amqQueue, 'result-upload', routingKey).then(function() {
+            return amqCh.bindQueue(amqQueue, 'result-upload', routingKey).then(function() {
                 return amqCh.consume(amqQueue, function(msg) {
                     consumer(msg);
                 }, {noAck: true});
