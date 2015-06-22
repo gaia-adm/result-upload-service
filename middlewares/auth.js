@@ -20,7 +20,7 @@ var logger = log4js.getLogger('auth.js');
  */
 function getOAuthAccessToken(bearerToken, callback) {
     var options = {
-        uri: 'http://authserver:9001/auth/oauth/check_token',
+        uri: 'http://authserver:9001/sts/oauth/check_token',
         method: 'GET',
         qs: {token: bearerToken}
     };

@@ -306,7 +306,7 @@ function createOAuthClient(callback) {
     // create client
     var clientId = uuid.v4();
     var options = {
-        uri: getAuthServerUri().resource('/auth/oauth/client').toString(), method: 'POST', json: true, body: {
+        uri: getAuthServerUri().resource('/sts/oauth/client').toString(), method: 'POST', json: true, body: {
             'client_id': clientId,
             'client_secret': 'secret',
             'scope': 'trust',
@@ -325,7 +325,7 @@ function createOAuthClient(callback) {
 function createOAuthAccessToken(callback) {
     createOAuthClient(function(err, client) {
         var options = {
-            uri: getAuthServerUri().resource('/auth/oauth/token').query({
+            uri: getAuthServerUri().resource('/sts/oauth/token').query({
                 grant_type: "client_credentials", client_id: client.clientId, client_secret: client.secret
             }).toString(), method: 'POST', json: true
         };
