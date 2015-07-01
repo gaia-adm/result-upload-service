@@ -42,16 +42,12 @@ router.post('/v1/upload-file', function(req, res) {
  * @returns object with file metadata
  */
 function getFileMetadata(req) {
-    var tagArray = [], tags = req.query.tags;
-    if (tags !== undefined && tags !== null) {
-        tagArray = tags.toString().split(',');
-    }
     return {
         metric : req.query.metric,
         category : req.query.category,
         name : req.query.name,
-        timestamp : req.query.timestamp,
-        tags : tagArray
+        source: req.query.source,
+        timestamp : req.query.timestamp
     };
 }
 
@@ -71,6 +67,9 @@ function validateMetadata(fileMetadata) {
         },
         name: {
             presence: true, length: {maximum: 100}
+        },
+        source: {
+            presence: false, length: {maximum: 100}
         },
         timestamp: {
             numericality: {greaterThan: 0, onlyInteger: true}
