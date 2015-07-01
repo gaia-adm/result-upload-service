@@ -131,6 +131,21 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
             });
         });
 
+        it('should return 400 when source is too long', function(done) {
+            var options = {
+                uri: getServiceUri(), method: 'POST', headers: {
+                    'content-type': 'text/plain'
+                }, auth: {
+                    sendImmediately: true, bearer: accessToken
+                }, qs: {metric: 1, category: 2, name: 3, source: randomstring.generate(200), timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
+            };
+            request(options, function(err, response, body) {
+                assert.notOk(err, 'No error was expected');
+                assert.strictEqual(response.statusCode, 400);
+                done();
+            });
+        });
+
         it('should return 400 when category is missing', function(done) {
             var options = {
                 uri: getServiceUri(), method: 'POST', headers: {
