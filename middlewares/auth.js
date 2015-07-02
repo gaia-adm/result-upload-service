@@ -29,7 +29,7 @@ function getOAuthAccessToken(bearerToken, callback) {
             logger.error(err.stack);
             callback(new VError(err, 'Failed to verify bearer token due to error'));
         } else {
-            if (response.statusCode === 200) {
+            if (response.statusCode >= 200 && response.statusCode < 300) {
                 callback(false, {accessToken: bearerToken, expires: null});
             } else {
                 logger.warn('Unauthorized token \'' + bearerToken + '\', status code '+ response.statusCode);
