@@ -27,7 +27,9 @@ router.post('/v1/upload-file', function(req, res) {
             res.status(HttpStatus.BAD_REQUEST).json({error : validationResult});
             return;
         }
+        // add other useful properties
         metadata.contentType = contentType;
+        metadata.authorization = req.oauth.bearerToken.accessToken;
         receiveFile(metadata, req, res);
     } else {
         // will not be supported
