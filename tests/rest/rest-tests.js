@@ -62,6 +62,31 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
         });
     });
 
+    describe('Invalid scenarios', function() {
+        var accessToken;
+        before(function(done) {
+            createOAuthAccessToken(function(err, newToken) {
+                accessToken = newToken;
+                done();
+            });
+        });
+
+        it('should return 404 when invalid URI', function(done) {
+            var options = {
+                uri: getServiceUri() + 'invalid', method: 'POST', headers: {
+                    'content-type': 'text/plain'
+                }, auth: {
+                    sendImmediately: true, bearer: accessToken
+                }, body: 'Hello from FileMetadataTest'
+            };
+            request(options, function(err, response, body) {
+                assert.notOk(err, 'No error was expected');
+                assert.strictEqual(response.statusCode, 404);
+                done();
+            });
+        });
+    });
+
     describe('File metadata', function() {
         var accessToken;
         before(function(done) {

@@ -43,7 +43,9 @@ app.use(defaultErrorHandler);
  * @param req express request
  * @param res express response
  */
-function defaultErrorHandler(err, req, res) {
+function defaultErrorHandler(err, req, res, next) {
+    if (!(err instanceof Error)) {return next(err);}
+
     logger.error('Unhandled exception in REST call \'' + req.path + '\'');
     logger.error(err.stack);
     res.status(HttpStatus.INTERNAL_SERVER_ERROR);
