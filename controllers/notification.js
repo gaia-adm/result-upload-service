@@ -7,9 +7,11 @@
 var log4js = require('log4js');
 var amqp = require('amqplib');
 var VError = require('verror');
+var when = require('when');
 
 var logger = log4js.getLogger('notification.js');
 var channel = null;
+var connection = null;
 
 /**
  * Collects credentials for connection to AMQ (RabbitMQ).
@@ -94,6 +96,7 @@ function initAmq() {
 
         logger.info('Connected to AMQ');
 
+        connection = conn;
         return initChannel(conn);
     }, function (err) {
         logger.error(err.stack);
@@ -123,7 +126,52 @@ function getRoutingKey(fileMetadata) {
     return fileMetadata.metric + '/' + fileMetadata.category;
 }
 
+/**
+ * Closes the channel.
+ *
+ * @returns promise
+ */
+function closeChannel() {
+    if (channel !== null) {
+        var ok = channel.close();
+        return ok.finally(function() {
+            logger.debug('Closed AMQ channel');
+            channel = null;
+        });
+    } else {
+        return when.resolve();
+    }
+}
+
+/**
+ * Closes the AMQP connection.
+ *
+ * @return promise
+ */
+function closeConnection() {
+    if (connection !== null) {
+        var ok = connection.close();
+        return ok.finally(function() {
+            logger.debug('Closed AMQ connection');
+            connection = null;
+        });
+    } else {
+        return when.resolve();
+    }
+}
+
+/**
+ * Closes all channels and connection.
+ *
+ * @returns promise
+ */
+function shutdown() {
+    var ok = closeChannel();
+    return ok.then(closeConnection);
+}
+
 /** To be called to initialize the notification module. This involves opening connection to RabbitMQ. Returns promise. */
 exports.initAmq = initAmq;
 /** Sends notification to result processing service. */
 exports.send = send;
+exports.shutdown = shutdown;

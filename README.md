@@ -27,7 +27,6 @@ Building:
 Gruntfile.js is used for running tests, JSHint, JSDoc. For building production image distribution/release/Dockerfile can be used. For building image for development purposes, distribution/dev/Dockerfile can be used. The dev image is meant to be used for starting "nodemon server.js" which will automatically reload Node.js server after file change. In dev environment one would setup mapping of "/src" to host file system.
 
 Known issues:
-- need to solve graceful shutdown - close all sockets/connections
 - we don't handle reconnection to RabbitMQ, handle AMQ channel recreation
 - no file size limits, file storage could be more optimized, separation by tenantId (each tenant different directory - need to know tenantId)
 - don't send stacktrace for REST errors when in production

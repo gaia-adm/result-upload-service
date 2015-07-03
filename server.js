@@ -8,7 +8,9 @@
 var log4js = require('log4js');
 // replaces console.log function with log4j
 log4js.replaceConsole();
+var logger = log4js.getLogger('server.js');
 
+var grace = require('grace');
 var express = require('express'), app = express();
 var HttpStatus = require('http-status-codes');
 var notification = require('./controllers/notification');
@@ -17,16 +19,15 @@ var auth = require('./middlewares/auth');
 
 var PORT = 8080;
 
-var logger = log4js.getLogger('server.js');
+var graceApp = grace.create();
 
 exitOnSignal('SIGINT');
 exitOnSignal('SIGTERM');
 
-// TODO: use grace or other module for graceful shutdown (close sockets etc) - not easy as we need to exec async code in multiple modules
 function exitOnSignal(signal) {
     process.on(signal, function() {
         logger.debug('Caught ' + signal + ', exiting');
-        process.exit(1);
+        graceApp.shutdown(1);
     });
 }
 
@@ -56,15 +57,35 @@ function defaultErrorHandler(err, req, res) {
  */
 function initServer() {
     // add any async initializations here
-    when.all([notification.initAmq()]).then(function() {
+    when.all([notification.initAmq()]).done(function onOk() {
         app.listen(PORT, function() {
             logger.info('Running on http://localhost:' + PORT);
         });
-    }, function(err) {
+    }, function onError(err) {
         logger.error('Result upload service initialization failure');
         logger.error(err.stack);
-        process.exit(1);
+        graceApp.shutdown(1);
     });
 }
 
-initServer();
+graceApp.on('start', function () {
+    initServer();
+});
+
+graceApp.on('error', function(err){
+    console.error(err);
+});
+
+graceApp.on('shutdown', function(cb) {
+    notification.shutdown().done(function onOk() {
+        cb();
+    }, function onFailed(err) {
+        cb(err);
+    });
+});
+
+graceApp.on ('exit', function(code){
+    logger.debug('Exiting with code ' + code);
+});
+
+graceApp.start();

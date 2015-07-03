@@ -11,9 +11,9 @@ describe('notification tests', function() {
     var amqQueue;
 
     before(function(done) {
-        notification.initAmq().then(function() {
+        notification.initAmq().done(function onOk() {
             done();
-        }, function(err) {
+        }, function onError(err) {
             assert.fail(err, null, 'Failed to init notification module');
         });
     });
@@ -55,6 +55,14 @@ describe('notification tests', function() {
         if (amqConn) {
             amqConn.close();
         }
+    });
+
+    after(function(done) {
+        notification.shutdown().done(function onOk() {
+            done();
+        }, function onError(err) {
+            assert.fail(err, null, 'Failed to disconnect from AMQ');
+        });
     });
 
     function consumeMessages(routingKey, consumer) {
