@@ -58,7 +58,7 @@ function initChannel(conn) {
         ch.on('close', cleanup);
 
         channel = ch;
-        return ch.assertExchange('result-upload', 'direct', {durable: true})
+        return ch.assertExchange('result-upload', 'direct', {durable: true});
     });
 }
 
