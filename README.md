@@ -12,10 +12,10 @@ Configuration is limited as Docker network links/port mappings are expected to b
 Public REST:
 - POST /result-upload/rest/v1/upload-file - used to send content to be processed
     - supports Content-Type "application/*" and "text/*"
-    - metadata is transported in query parameters. The following metadata is supported: metric, category, name, timestamp, tags. Semantics is the same like in [metrics-gateway-service]. Metric, category and name are required.
+    - metadata is transported in query parameters. The following metadata is supported: metric, category, name, source, timestamp. Semantics is the same like in [metrics-gateway-service]. Metric, category and name are required.
     - responds with 200 OK if the file was accepted and its guaranteed it will be processed
 
-The service is implemented in Node.js in order to support many parallel connections. There is no processing in the service. It saves received file to local file system (NFS v4 in production) under uuid based name. After saving file, it sends tification to RabbitMQ to exchange "result-upload" with metadata and file path. As RabbitMQ routingKey we use "metric/category".
+The service is implemented in Node.js in order to support many parallel connections. There is no processing in the service. It saves received file to local file system (NFS v4 in production) under uuid based name. After saving file, it sends notification to RabbitMQ to exchange "result-upload" with metadata and file path. As RabbitMQ routingKey we use "metric/category".
 
 There are three types of tests:
 - unit - limited to single module, do not use OS functions or other external systems
