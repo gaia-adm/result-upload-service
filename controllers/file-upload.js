@@ -21,16 +21,15 @@ router.post('/v1/upload-file', function(req, res) {
         res.status(HttpStatus.BAD_REQUEST);
         res.json({error : 'ContentType \'' + contentType + '\' is not yet supported'});
     } else if (req.is('application/*') || req.is('text/*')) {
-        var metadata = getFileMetadata(req);
-        var validationResult = validateMetadata(metadata);
+        var fileMetadata = getFileMetadata(req);
+        var validationResult = validateMetadata(fileMetadata);
         if (validationResult) {
             res.status(HttpStatus.BAD_REQUEST).json({error : validationResult});
             return;
         }
         // add other useful properties
-        metadata.contentType = contentType;
-        metadata.authorization = req.oauth.bearerToken.accessToken;
-        receiveFile(metadata, req, res);
+        fileMetadata.contentType = contentType;
+        receiveFile(req.oauth.bearerToken.accessToken, fileMetadata, req, res);
     } else {
         // will not be supported
         res.status(HttpStatus.BAD_REQUEST);
@@ -83,11 +82,12 @@ function validateMetadata(fileMetadata) {
 /**
  * Handles reception of file.
  *
- * @param metadata object with file metadata
+ * @param authorization bearer token that can be used for internal HTTP calls
+ * @param fileMetadata object with file metadata
  * @param req express request
  * @param res express response
  */
-function receiveFile(metadata, req, res) {
+function receiveFile(authorization, fileMetadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {
             logger.error(err.stack);
@@ -95,8 +95,8 @@ function receiveFile(metadata, req, res) {
             // TODO: in production mode don't send stack trace
             res.json({error: err.message, stacktrace: err.stack});
         } else {
-            metadata.path = path;
-            notification.send(metadata, function(err) {
+            fileMetadata.path = path;
+            notification.send(authorization, fileMetadata, function(err) {
                 if (err) {
                     logger.error(err.stack);
                     res.status(HttpStatus.INTERNAL_SERVER_ERROR);

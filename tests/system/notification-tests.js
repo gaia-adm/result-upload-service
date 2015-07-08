@@ -45,7 +45,7 @@ describe('notification tests', function() {
             done();
         }).then(function() {
             // send notification
-            notification.send({metric: metric, category: category, name: '3', contentType: 'text/plain'}, function(err) {
+            notification.send(null, {metric: metric, category: category, name: '3', contentType: 'text/plain'}, function(err) {
                 assert.notOk(err, 'No error was expected');
             });
         });

@@ -106,15 +106,16 @@ function initAmq() {
 
 /**
  * Sends notification to result processing service.
+ * @param authorization bearer token that can be used for internal HTTP calls
  * @param fileMetadata object with file metadata - path, metric, category etc.
  * @param callback
  */
-function send(fileMetadata, callback) {
+function send(authorization, fileMetadata, callback) {
     if (!channel) {
         throw new Error('Notification channel is not ready');
     }
     channel.publish('result-upload', getRoutingKey(fileMetadata), new Buffer(JSON.stringify(fileMetadata)),
-            {mandatory: true, persistent: true}, callback);
+            {mandatory: true, persistent: true, headers: {authorization: authorization}}, callback);
 }
 
 /**
