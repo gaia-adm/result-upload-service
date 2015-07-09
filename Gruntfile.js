@@ -19,15 +19,15 @@ module.exports = function(grunt) {
             unit: {
                 options: {
                     reporter: 'spec', captureFile: 'unit-tests-results.txt'
-                }, src: ['tests/unit/**/*.js']
+                }, src: ['tests/unit/**/*-tests.js']
             }, system: {
                 options: {
                     reporter: 'spec', captureFile: 'system-tests-results.txt'
-                }, src: ['tests/system/**/*.js']
+                }, src: ['tests/system/**/*-tests.js']
             }, rest: {
                 options: {
                     reporter: 'spec', captureFile: 'rest-tests-results.txt'
-                }, src: ['tests/rest/**/*.js']
+                }, src: ['tests/rest/**/*-tests.js']
             }
         }
     });
