@@ -1,29 +1,18 @@
-FROM ubuntu:trusty
-
-ENV http_proxy 'http://proxy.bbn.hp.com:8080'
-ENV https_proxy 'http://proxy.bbn.hp.com:8080'
-
-#RUN
-#  apt-get update && apt-get dist-upgrade
-
-RUN   \
-  apt-get -y -qq install wget
-
-# Install Node
-RUN   \
-  cd /opt && \
-  wget http://nodejs.org/dist/v0.12.4/node-v0.12.4-linux-x64.tar.gz && \
-  tar -xzf node-v0.12.4-linux-x64.tar.gz && \
-  mv node-v0.12.4-linux-x64 node && \
-  cd /usr/local/bin && \
-  ln -s /opt/node/bin/* . && \
-  rm -f /opt/node-v0.12.4-linux-x64.tar.gz
+FROM gaiaadm/nodejs:0.12.6
 
 # Bundle app source
 COPY . /src
 
-# Install app dependencies
-RUN cd /src; npm install
+# setup.sh script is temporary workaround until Docker adds support for passing ENV variables
+# to docker build command to allow setting up proxy
+ADD setup.sh /tmp/setup.sh
+RUN /tmp/setup.sh
+
+# Set the working directory
+WORKDIR   /src
+
+RUN grunt jshint
+RUN grunt unit
 
 EXPOSE  8080
 

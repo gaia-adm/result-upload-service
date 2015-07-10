@@ -8,11 +8,11 @@ var amqp = require('amqplib');
 var fs = require('fs');
 var randomstring = require("randomstring");
 
-var service_hostname = process.env.SERVICE_HOSTNAME || 'localhost';
+var service_hostname = process.env.SERVICE_HOST || 'localhost';
 var service_port = process.env.SERVICE_PORT || 8080;
 
-var auth_hostname = process.env.AUTH_HOSTNAME || 'authserver';
-var auth_port = process.env.AUTH_PORT || 9001;
+var auth_hostname = 'authserver';
+var auth_port = process.env.AUTH_PORT || 8080;
 
 describe('/result-upload/rest/v1/upload-file tests', function() {
     describe('OAuth authorization', function() {

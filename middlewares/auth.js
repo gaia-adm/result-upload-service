@@ -12,6 +12,16 @@ var VError = require('verror');
 var logger = log4js.getLogger('auth.js');
 
 /**
+ * Returns URI where security token can be checked
+ *
+ * @returns {string}
+ */
+function getAuthCheckUri() {
+    var port = process.env.AUTH_PORT || 8080;
+    return 'http://authserver:' + port + '/sts/oauth/check_token';
+}
+
+/**
  * Gets full access token for given bearer token. The access token holds additional information needed by application
  * or the oauth2-server library.
  *
@@ -20,7 +30,7 @@ var logger = log4js.getLogger('auth.js');
  */
 function getOAuthAccessToken(bearerToken, callback) {
     var options = {
-        uri: 'http://authserver:9001/sts/oauth/check_token',
+        uri: getAuthCheckUri(),
         method: 'GET',
         qs: {token: bearerToken}
     };
