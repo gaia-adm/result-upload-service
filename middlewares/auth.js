@@ -32,6 +32,9 @@ function getOAuthAccessToken(bearerToken, callback) {
     var options = {
         uri: getAuthCheckUri(),
         method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        },
         qs: {token: bearerToken}
     };
     request(options, function(err, response, body) {
@@ -40,7 +43,8 @@ function getOAuthAccessToken(bearerToken, callback) {
             callback(new VError(err, 'Failed to verify bearer token due to error'));
         } else {
             if (response.statusCode >= 200 && response.statusCode < 300) {
-                callback(false, {accessToken: bearerToken, expires: null});
+                var responseObject = JSON.parse(body);
+                callback(false, {accessToken: bearerToken, expires: null, tenantId: responseObject.tenantId});
             } else {
                 logger.warn('Unauthorized token \'' + bearerToken + '\', status code '+ response.statusCode);
                 logger.warn(body);

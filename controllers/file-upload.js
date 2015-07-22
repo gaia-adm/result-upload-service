@@ -21,15 +21,17 @@ router.post('/v1/upload-file', function(req, res) {
         res.status(HttpStatus.BAD_REQUEST);
         res.json({error : 'ContentType \'' + contentType + '\' is not yet supported'});
     } else if (req.is('application/*') || req.is('text/*')) {
-        var fileMetadata = getFileMetadata(req);
-        var validationResult = validateMetadata(fileMetadata);
+        var contentMetadata = getContentMetadata(req);
+        var validationResult = validateMetadata(contentMetadata);
         if (validationResult) {
             res.status(HttpStatus.BAD_REQUEST).json({error : validationResult});
             return;
         }
-        // add other useful properties
-        fileMetadata.contentType = contentType;
-        receiveFile(req.oauth.bearerToken.accessToken, fileMetadata, req, res);
+        var processingMetadata = {
+            accessToken: req.oauth.bearerToken.accessToken,
+            tenantId: req.oauth.bearerToken.tenantId
+        };
+        receiveFile(processingMetadata, contentMetadata, req, res);
     } else {
         // will not be supported
         res.status(HttpStatus.BAD_REQUEST);
@@ -38,56 +40,48 @@ router.post('/v1/upload-file', function(req, res) {
 });
 
 /**
- * Extracts file metadata from express request
+ * Extracts content metadata from express request
  * @param req express request
- * @returns object with file metadata
+ * @returns object with content metadata
  */
-function getFileMetadata(req) {
-    return {
-        metric : req.query.metric,
-        category : req.query.category,
-        name : req.query.name,
-        source: req.query.source,
-        timestamp : req.query.timestamp
-    };
+function getContentMetadata(req) {
+    var contentMetadata = {};
+    for (var prop in req.query) {
+        if (req.query.hasOwnProperty(prop)) {
+            contentMetadata[prop] = req.query[prop];
+        }
+    }
+    contentMetadata.contentType = req.get('Content-Type');
+    return contentMetadata;
 }
 
 /**
- * Performs validation of file metadata.
+ * Performs validation of content metadata.
  *
- * @param fileMetadata object with file metadata
+ * @param contentMetadata object with file metadata
  * @returns nothing if metadata is valid or object with attributes having arrays of errors if there was an error
  */
-function validateMetadata(fileMetadata) {
+function validateMetadata(contentMetadata) {
     var constraints = {
         metric: {
             presence: true, length: {maximum: 100}
         },
         category: {
             presence: true, length: {maximum: 100}
-        },
-        name: {
-            presence: true, length: {maximum: 100}
-        },
-        source: {
-            presence: false, length: {maximum: 100}
-        },
-        timestamp: {
-            numericality: {greaterThan: 0, onlyInteger: true}
         }
     };
-    return validate(fileMetadata, constraints);
+    return validate(contentMetadata, constraints);
 }
 
 /**
  * Handles reception of file.
  *
- * @param authorization bearer token that can be used for internal HTTP calls
- * @param fileMetadata object with file metadata
+ * @param processingMetadata internal metadata containing accessToken that can be used for internal HTTP calls, tenantId
+ * @param contentMetadata object with content metadata
  * @param req express request
  * @param res express response
  */
-function receiveFile(authorization, fileMetadata, req, res) {
+function receiveFile(processingMetadata, contentMetadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {
             logger.error(err.stack);
@@ -95,8 +89,8 @@ function receiveFile(authorization, fileMetadata, req, res) {
             // TODO: in production mode don't send stack trace
             res.json({error: err.message, stacktrace: err.stack});
         } else {
-            fileMetadata.path = path;
-            notification.send(authorization, fileMetadata, function(err) {
+            processingMetadata.path = path;
+            notification.send(processingMetadata, contentMetadata, function(err) {
                 if (err) {
                     logger.error(err.stack);
                     res.status(HttpStatus.INTERNAL_SERVER_ERROR);

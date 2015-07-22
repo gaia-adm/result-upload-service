@@ -111,66 +111,6 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
             });
         });
 
-        it('should return 400 when timestamp is invalid', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: 2, name: 3, timestamp: 'mustbenumber'}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
-        it('should return 400 when name is missing', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: 2, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
-        it('should return 400 when name is too long', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: 2, name: randomstring.generate(200), timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
-        it('should return 400 when source is too long', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: 2, name: 3, source: randomstring.generate(200), timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
         it('should return 400 when category is missing', function(done) {
             var options = {
                 uri: getServiceUri(), method: 'POST', headers: {
@@ -282,8 +222,8 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                 assert.strictEqual(fileMetadata.name, '3');
                 assert.isNotNull(fileMetadata.timestamp);
                 assert.strictEqual(fileMetadata.contentType, 'text/plain');
-                assert.isNotNull(fileMetadata.path);
-                var content = fs.readFileSync(fileMetadata.path).toString();
+                assert.isNotNull(msg.properties.headers.path);
+                var content = fs.readFileSync(msg.properties.headers.path).toString();
                 assert.strictEqual(content, fileBody, 'Stored file contents doesnt match');
                 done();
             }).then(function() {
@@ -342,23 +282,47 @@ function getAuthServerUri() {
     return URI().protocol('http').hostname(auth_hostname).port(auth_port);
 }
 
-function createOAuthClient(callback) {
-    // create client
-    var clientId = uuid.v4();
+function createTenant(callback) {
+    // create tenant, then get tenantId
+    var adminUsername = 'admin_' + uuid.v4();
     var options = {
-        uri: getAuthServerUri().resource('/sts/oauth/client').toString(), method: 'POST', json: true, body: {
-            'client_id': clientId,
-            'client_secret': 'secret',
-            'scope': 'trust',
-            'authorized_grant_types': 'client_credentials',
-            'authorities': 'ROLE_APP',
-            'additional_information': 'more data'
-        }
+        uri: getAuthServerUri().resource('/sts/tenant').toString(), method: 'POST', json: true, body: {'adminUserName': adminUsername}
     };
     request(options, function(err, response, body) {
         assert.notOk(err, 'No error was expected');
         assert.strictEqual(response.statusCode, 201);
-        callback(null, {clientId: clientId, secret: 'secret'});
+        // get tenantId
+        options = {
+            uri: getAuthServerUri().resource('/sts/tenant').toString(), method: 'GET', json: true, qs: {user: adminUsername}
+        };
+        request(options, function(err, response, body) {
+            assert.notOk(err, 'No error was expected');
+            assert.strictEqual(response.statusCode, 200);
+            callback(null, body);
+        });
+    });
+}
+
+function createOAuthClient(callback) {
+    createTenant(function(err, tenantInfo) {
+        // create client
+        var clientId = uuid.v4();
+        var options = {
+            uri: getAuthServerUri().resource('/sts/oauth/client').toString(), method: 'POST', json: true, body: {
+                'client_id': clientId,
+                'client_secret': 'secret',
+                'scope': 'trust',
+                'authorized_grant_types': 'client_credentials',
+                'authorities': 'ROLE_APP',
+                'additional_information': 'more data',
+                'tenantId': tenantInfo.tenantId
+            }
+        };
+        request(options, function(err, response, body) {
+            assert.notOk(err, 'No error was expected');
+            assert.strictEqual(response.statusCode, 201);
+            callback(null, {clientId: clientId, secret: 'secret'});
+        });
     });
 }
 
