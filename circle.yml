@@ -10,12 +10,14 @@ test:
     - docker run -d -u jetty --name sts gaiaadm/sts; sleep 10
     # run system tests
     - docker run -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" --link rabbitmq:amqserver --link sts:authserver --name test-runner gaiaadm/result-upload-service:$BUILD_TAG grunt system
+    - docker cp test-runner:/src/system-tests-results.txt $CIRCLE_ARTIFACTS
+    - docker rm test-runner
     # run result-upload-service as demon for rest tests
     - docker run -d -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" --link rabbitmq:amqserver --link sts:authserver --name result-upload-service gaiaadm/result-upload-service:$BUILD_TAG; sleep 10
     # run rest tests
     - docker run -e AMQ_USER="admin" -e SERVICE_HOST="result-upload-service" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" --link result-upload-service:result-upload-service --link rabbitmq:amqserver --link sts:authserver --name test-runner gaiaadm/result-upload-service:$BUILD_TAG grunt rest
-    - docker cp test-runner:/src/system-tests-results.txt $CIRCLE_ARTIFACTS
     - docker cp test-runner:/src/rest-tests-results.txt $CIRCLE_ARTIFACTS
+    - docker rm test-runner
 deployment:
   hub:
     branch: master
