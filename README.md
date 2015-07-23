@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/gaia-adm/result-upload-service.svg?style=svg)](https://circleci.com/gh/gaia-adm/result-upload-service)
+CircleCI build status: [![Circle CI](https://circleci.com/gh/gaia-adm/result-upload-service.svg?style=svg)](https://circleci.com/gh/gaia-adm/result-upload-service)
 
 # result-upload-service
 
