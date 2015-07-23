@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/gaia-adm/result-upload-service.svg?style=svg)](https://circleci.com/gh/gaia-adm/result-upload-service)
+
 # result-upload-service
 
 Result Upload Service offers a public REST endpoint for sending unprocessed data to GAIA from which measures need to be extracted. Data can be in any format supported by GAIA result processors. Typically it will be XML/JSON data - builds, tests, issue changes extracted from public REST of ALM, Jenkins, JIRA etc.
