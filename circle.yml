@@ -9,6 +9,8 @@ test:
     - docker run -d -e RABBITMQ_PASS="mypass" --name rabbitmq gaiaadm/rabbitmq; sleep 10
     - docker run -d -u jetty --name sts gaiaadm/sts; sleep 10
     - docker run -d -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" --link rabbitmq:amqserver --link sts:authserver --name result-upload-service gaiaadm/result-upload-service:$BUILD_TAG; sleep 10
+    - docker exec -it result-upload-service grunt system
+    - docker cp result-upload-service:/src/system-tests-results.txt $CIRCLE_ARTIFACTS
 deployment:
   hub:
     branch: master
