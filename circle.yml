@@ -10,12 +10,14 @@ test:
     - docker run -d -u jetty --name sts gaiaadm/sts; sleep 10
     # run system tests
     - docker run -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:amqserver --link sts:authserver --name system-test-runner gaiaadm/result-upload-service:$BUILD_TAG grunt system
-    - docker cp system-test-runner:/src/system-tests-results.txt $CIRCLE_ARTIFACTS
+    - docker cp system-test-runner:/src/system-test-results.xml $CIRCLE_TEST_REPORTS
+    - docker cp system-test-runner:/src/system-test-results.txt $CIRCLE_ARTIFACTS
     # run result-upload-service as demon for rest tests
     - docker run -d -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:amqserver --link sts:authserver --name result-upload-service gaiaadm/result-upload-service:$BUILD_TAG; sleep 10
     # run rest tests
     - docker run -e AMQ_USER="admin" -e SERVICE_HOST="result-upload-service" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link result-upload-service:result-upload-service --link rabbitmq:amqserver --link sts:authserver --name rest-test-runner gaiaadm/result-upload-service:$BUILD_TAG grunt rest
-    - docker cp rest-test-runner:/src/rest-tests-results.txt $CIRCLE_ARTIFACTS
+    - docker cp rest-test-runner:/src/rest-test-results.xml $CIRCLE_TEST_REPORTS
+    - docker cp rest-test-runner:/src/rest-test-results.txt $CIRCLE_ARTIFACTS
 deployment:
   hub:
     branch: master
