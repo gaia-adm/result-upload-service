@@ -9,7 +9,7 @@ module.exports = function(grunt) {
             }
         }, jsdoc: {
             dist: {
-                src: ['./*.js', './middlewares/*.js', './controllers/*.js'],
+                src: ['./*.js', './middlewares/*.js', './controllers/*.js', './util/*.js'],
                 jsdoc: './node_modules/.bin/jsdoc',
                 options: {
                     destination: 'doc', configure: './jsdoc-conf.json'

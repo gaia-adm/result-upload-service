@@ -12,8 +12,8 @@ var logger = log4js.getLogger('server.js');
 
 var grace = require('grace');
 var express = require('express'), app = express();
-var HttpStatus = require('http-status-codes');
 var notification = require('./controllers/notification');
+var errorReporter = require('./util/error-reporter');
 var when = require('when');
 var auth = require('./middlewares/auth');
 
@@ -48,10 +48,7 @@ function defaultErrorHandler(err, req, res, next) {
 
     logger.error('Unhandled exception in REST call \'' + req.path + '\'');
     logger.error(err.stack);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-    res.contentType = 'application/json';
-    // TODO: in production mode don't send stack trace
-    res.send({error: err.message, stacktrace: err.stack});
+    errorReporter.reportError(res, err);
 }
 
 /**

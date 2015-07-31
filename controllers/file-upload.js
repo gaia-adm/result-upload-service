@@ -9,6 +9,7 @@ var express = require('express'), router = express.Router();
 var HttpStatus = require('http-status-codes');
 var fileStorage = require('./file-storage');
 var notification = require('./notification');
+var errorReporter = require('../util/error-reporter');
 var validate = require("validate.js");
 var contentTypeParser = require('content-type');
 
@@ -17,6 +18,7 @@ var logger = log4js.getLogger('file-upload.js');
 
 router.post('/v1/upload-data', function(req, res) {
     var contentType = req.get('Content-Type');
+    logger.debug('[x] Request ' + req.originalUrl);
     if (req.is('multipart/mixed')) {
         // TODO: implement. Parameters are 1st part, file is 2nd part
         res.status(HttpStatus.BAD_REQUEST);
@@ -90,17 +92,13 @@ function receiveFile(processingMetadata, contentMetadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {
             logger.error(err.stack);
-            res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-            // TODO: in production mode don't send stack trace
-            res.json({error: err.message, stacktrace: err.stack});
+            errorReporter.reportError(res, err);
         } else {
             processingMetadata.path = path;
             notification.send(processingMetadata, contentMetadata, function(err) {
                 if (err) {
                     logger.error(err.stack);
-                    res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-                    // TODO: in production mode don't send stack trace
-                    res.json({error: err.message, stacktrace: err.stack});
+                    errorReporter.reportError(res, err);
                 } else {
                     res.status(HttpStatus.OK);
                     res.send();
