@@ -71,10 +71,7 @@ function getContentMetadata(req) {
  */
 function validateMetadata(contentMetadata) {
     var constraints = {
-        metric: {
-            presence: true, length: {maximum: 100}
-        },
-        category: {
+        dataType: {
             presence: true, length: {maximum: 100}
         }
     };

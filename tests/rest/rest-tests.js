@@ -51,7 +51,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                         'content-type': 'text/plain'
                     }, auth: {
                         sendImmediately: true, bearer: accessToken
-                    }, qs: {metric: 1, category: 2, name: 3}, body: 'Hello from AuthTest'
+                    }, qs: {dataType: 1}, body: 'Hello from AuthTest'
                 };
                 request(options, function(err, response, body) {
                     assert.notOk(err, 'No error was expected');
@@ -111,13 +111,13 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
             });
         });
 
-        it('should return 400 when category is missing', function(done) {
+        it('should return 400 when dataType is missing', function(done) {
             var options = {
                 uri: getServiceUri(), method: 'POST', headers: {
                     'content-type': 'text/plain'
                 }, auth: {
                     sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, name: 3, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
+                }, qs: {}, body: 'Hello from FileMetadataTest'
             };
             request(options, function(err, response, body) {
                 assert.notOk(err, 'No error was expected');
@@ -126,43 +126,13 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
             });
         });
 
-        it('should return 400 when category is too long', function(done) {
+        it('should return 400 when dataType is too long', function(done) {
             var options = {
                 uri: getServiceUri(), method: 'POST', headers: {
                     'content-type': 'text/plain'
                 }, auth: {
                     sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: randomstring.generate(200), name: 3, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
-        it('should return 400 when metric is missing', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {category: 2, name: 3, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
-            };
-            request(options, function(err, response, body) {
-                assert.notOk(err, 'No error was expected');
-                assert.strictEqual(response.statusCode, 400);
-                done();
-            });
-        });
-
-        it('should return 400 when metric is too long', function(done) {
-            var options = {
-                uri: getServiceUri(), method: 'POST', headers: {
-                    'content-type': 'text/plain'
-                }, auth: {
-                    sendImmediately: true, bearer: accessToken
-                }, qs: {metric: randomstring.generate(200), category: 2, name: 3, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
+                }, qs: {dataType: randomstring.generate(200)}, body: 'Hello from FileMetadataTest'
             };
             request(options, function(err, response, body) {
                 assert.notOk(err, 'No error was expected');
@@ -177,7 +147,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                     'content-type': 'text/plain'
                 }, auth: {
                     sendImmediately: true, bearer: accessToken
-                }, qs: {metric: 1, category: 2, name: 3, timestamp: new Date().getTime()}, body: 'Hello from FileMetadataTest'
+                }, qs: {dataType: 1}, body: 'Hello from FileMetadataTest'
             };
             request(options, function(err, response, body) {
                 assert.notOk(err, 'No error was expected');
@@ -213,14 +183,10 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
         it('must send message to AMQ and create file after file upload', function(done) {
             var fileBody = 'Hello from AMQ integration test';
             // prepare to receive message
-            var metric = uuid.v4();
-            var category = uuid.v4();
-            consumeMessages(metric + '/' + category, function(msg) {
+            var dataType = uuid.v4();
+            consumeMessages(dataType, function(msg) {
                 var contentMetadata = JSON.parse(msg.content.toString());
-                assert.strictEqual(contentMetadata.metric, metric);
-                assert.strictEqual(contentMetadata.category, category);
-                assert.strictEqual(contentMetadata.name, '3');
-                assert.isNotNull(contentMetadata.timestamp);
+                assert.strictEqual(contentMetadata.dataType, dataType);
                 assert.strictEqual(contentMetadata.contentType, 'text/plain; charset=utf-8');
                 assert.strictEqual(contentMetadata.mimeType, 'text/plain');
                 assert.strictEqual(contentMetadata.charset, 'utf-8');
@@ -235,7 +201,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                         'content-type': 'text/plain; charset=utf-8'
                     }, auth: {
                         sendImmediately: true, bearer: accessToken
-                    }, qs: {metric: metric, category: category, name: 3, timestamp: new Date().getTime()}, body: fileBody
+                    }, qs: {dataType: dataType}, body: fileBody
                 };
                 request(options, function(err, response, body) {
                     assert.notOk(err, 'No error was expected');
@@ -247,14 +213,10 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
         it('must send message to AMQ and create file after file upload - no charset', function(done) {
             var fileBody = 'Hello from AMQ integration test';
             // prepare to receive message
-            var metric = uuid.v4();
-            var category = uuid.v4();
-            consumeMessages(metric + '/' + category, function(msg) {
+            var dataType = uuid.v4();
+            consumeMessages(dataType, function(msg) {
                 var contentMetadata = JSON.parse(msg.content.toString());
-                assert.strictEqual(contentMetadata.metric, metric);
-                assert.strictEqual(contentMetadata.category, category);
-                assert.strictEqual(contentMetadata.name, '3');
-                assert.isNotNull(contentMetadata.timestamp);
+                assert.strictEqual(contentMetadata.dataType, dataType);
                 assert.strictEqual(contentMetadata.contentType, 'text/plain');
                 assert.strictEqual(contentMetadata.mimeType, 'text/plain');
                 assert.isUndefined(contentMetadata.charset);
@@ -269,7 +231,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
                         'content-type': 'text/plain'
                     }, auth: {
                         sendImmediately: true, bearer: accessToken
-                    }, qs: {metric: metric, category: category, name: 3, timestamp: new Date().getTime()}, body: fileBody
+                    }, qs: {dataType: dataType}, body: fileBody
                 };
                 request(options, function(err, response, body) {
                     assert.notOk(err, 'No error was expected');

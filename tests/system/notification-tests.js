@@ -34,18 +34,15 @@ describe('notification tests', function() {
 
     it('send notification must succeed', function(done) {
         // prepare to receive message
-        var metric = uuid.v4();
-        var category = uuid.v4();
-        consumeMessages(metric + '/' + category, function(msg) {
+        var dataType = uuid.v4();
+        consumeMessages(dataType, function(msg) {
             var fileMetadata = JSON.parse(msg.content.toString());
-            assert.strictEqual(fileMetadata.metric, metric);
-            assert.strictEqual(fileMetadata.category, category);
-            assert.strictEqual(fileMetadata.name, '3');
+            assert.strictEqual(fileMetadata.dataType, dataType);
             assert.strictEqual(fileMetadata.contentType, 'text/plain');
             done();
         }).then(function() {
             // send notification
-            notification.send(null, {metric: metric, category: category, name: '3', contentType: 'text/plain'}, function(err) {
+            notification.send(null, {dataType: dataType, contentType: 'text/plain'}, function(err) {
                 assert.notOk(err, 'No error was expected');
             });
         });

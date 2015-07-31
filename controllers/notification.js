@@ -107,7 +107,7 @@ function initAmq() {
 /**
  * Sends notification to result processing service.
  * @param processingMetadata bearer token that can be used for internal HTTP calls, tenantId, file path
- * @param contentMetadata object with content metadata - metric, category, contentType etc.
+ * @param contentMetadata object with content metadata - dataType, contentType etc.
  * @param callback
  */
 function send(processingMetadata, contentMetadata, callback) {
@@ -119,12 +119,12 @@ function send(processingMetadata, contentMetadata, callback) {
 }
 
 /**
- * Creates routing key for given file metadata. Determines what queue the notification goes to.
- * @param fileMetadata object with file metadata - path, metric, category etc.
+ * Creates routing key for given content metadata. Determines what queue the notification goes to.
+ * @param contentMetadata object with content metadata - dataType, contentType etc.
  * @returns {string} routing key
  */
-function getRoutingKey(fileMetadata) {
-    return fileMetadata.metric + '/' + fileMetadata.category;
+function getRoutingKey(contentMetadata) {
+    return contentMetadata.dataType;
 }
 
 /**
