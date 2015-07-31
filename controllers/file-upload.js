@@ -10,6 +10,7 @@ var HttpStatus = require('http-status-codes');
 var fileStorage = require('./file-storage');
 var notification = require('./notification');
 var validate = require("validate.js");
+var contentTypeParser = require('content-type');
 
 var logger = log4js.getLogger('file-upload.js');
 // REST endpoints handling file upload
@@ -51,7 +52,14 @@ function getContentMetadata(req) {
             contentMetadata[prop] = req.query[prop];
         }
     }
-    contentMetadata.contentType = req.get('Content-Type');
+    var contentType = req.get('Content-Type');
+    // add content type header and parsed values (mimeType & charset)
+    contentMetadata.contentType = contentType;
+    var parsedContentType = contentTypeParser.parse(contentType);
+    contentMetadata.mimeType = parsedContentType.type;
+    if (parsedContentType.parameters.charset) {
+        contentMetadata.charset = parsedContentType.parameters.charset;
+    }
     return contentMetadata;
 }
 

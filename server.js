@@ -75,7 +75,7 @@ graceApp.on('start', function () {
 });
 
 graceApp.on('error', function(err){
-    console.error(err);
+    logger.error(err);
 });
 
 graceApp.on('shutdown', function(cb) {
@@ -86,7 +86,7 @@ graceApp.on('shutdown', function(cb) {
     });
 });
 
-graceApp.on ('exit', function(code){
+graceApp.on('exit', function(code){
     logger.debug('Exiting with code ' + code);
 });
 

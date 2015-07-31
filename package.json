@@ -20,7 +20,8 @@
     "oauth2-server": "2.4.0",
     "body-parser": "1.13.0",
     "URIjs": "1.15.1",
-    "grace": "0.2.5"
+    "grace": "0.2.5",
+    "content-type": "1.0.1"
   },
   "devDependencies": {
     "chai": "^3.0.0",

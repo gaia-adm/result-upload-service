@@ -216,12 +216,48 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
             var metric = uuid.v4();
             var category = uuid.v4();
             consumeMessages(metric + '/' + category, function(msg) {
-                var fileMetadata = JSON.parse(msg.content.toString());
-                assert.strictEqual(fileMetadata.metric, metric);
-                assert.strictEqual(fileMetadata.category, category);
-                assert.strictEqual(fileMetadata.name, '3');
-                assert.isNotNull(fileMetadata.timestamp);
-                assert.strictEqual(fileMetadata.contentType, 'text/plain');
+                var contentMetadata = JSON.parse(msg.content.toString());
+                assert.strictEqual(contentMetadata.metric, metric);
+                assert.strictEqual(contentMetadata.category, category);
+                assert.strictEqual(contentMetadata.name, '3');
+                assert.isNotNull(contentMetadata.timestamp);
+                assert.strictEqual(contentMetadata.contentType, 'text/plain; charset=utf-8');
+                assert.strictEqual(contentMetadata.mimeType, 'text/plain');
+                assert.strictEqual(contentMetadata.charset, 'utf-8');
+                assert.isNotNull(msg.properties.headers.path);
+                var content = fs.readFileSync(msg.properties.headers.path).toString();
+                assert.strictEqual(content, fileBody, 'Stored file contents doesnt match');
+                done();
+            }).then(function() {
+                // upload file
+                var options = {
+                    uri: getServiceUri(), method: 'POST', headers: {
+                        'content-type': 'text/plain; charset=utf-8'
+                    }, auth: {
+                        sendImmediately: true, bearer: accessToken
+                    }, qs: {metric: metric, category: category, name: 3, timestamp: new Date().getTime()}, body: fileBody
+                };
+                request(options, function(err, response, body) {
+                    assert.notOk(err, 'No error was expected');
+                    assert.strictEqual(response.statusCode, 200);
+                });
+            });
+        });
+
+        it('must send message to AMQ and create file after file upload - no charset', function(done) {
+            var fileBody = 'Hello from AMQ integration test';
+            // prepare to receive message
+            var metric = uuid.v4();
+            var category = uuid.v4();
+            consumeMessages(metric + '/' + category, function(msg) {
+                var contentMetadata = JSON.parse(msg.content.toString());
+                assert.strictEqual(contentMetadata.metric, metric);
+                assert.strictEqual(contentMetadata.category, category);
+                assert.strictEqual(contentMetadata.name, '3');
+                assert.isNotNull(contentMetadata.timestamp);
+                assert.strictEqual(contentMetadata.contentType, 'text/plain');
+                assert.strictEqual(contentMetadata.mimeType, 'text/plain');
+                assert.isUndefined(contentMetadata.charset);
                 assert.isNotNull(msg.properties.headers.path);
                 var content = fs.readFileSync(msg.properties.headers.path).toString();
                 assert.strictEqual(content, fileBody, 'Stored file contents doesnt match');
