@@ -13,9 +13,9 @@ var validate = require("validate.js");
 var contentTypeParser = require('content-type');
 
 var logger = log4js.getLogger('file-upload.js');
-// REST endpoints handling file upload
+// REST endpoints handling data upload
 
-router.post('/v1/upload-file', function(req, res) {
+router.post('/v1/upload-data', function(req, res) {
     var contentType = req.get('Content-Type');
     if (req.is('multipart/mixed')) {
         // TODO: implement. Parameters are 1st part, file is 2nd part

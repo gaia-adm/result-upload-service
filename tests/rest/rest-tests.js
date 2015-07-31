@@ -14,7 +14,7 @@ var service_port = process.env.SERVICE_PORT || 8080;
 var auth_hostname = 'authserver';
 var auth_port = process.env.AUTH_PORT || 8080;
 
-describe('/result-upload/rest/v1/upload-file tests', function() {
+describe('/result-upload/rest/v1/upload-data tests', function() {
     describe('OAuth authorization', function() {
         it('should return 400 when no access token is present', function(done) {
             var options = {
@@ -273,7 +273,7 @@ describe('/result-upload/rest/v1/upload-file tests', function() {
 });
 
 function getServiceUri() {
-    return 'http://' + service_hostname + ':' + service_port + '/result-upload/rest/v1/upload-file';
+    return 'http://' + service_hostname + ':' + service_port + '/result-upload/rest/v1/upload-data';
 }
 
 function getAuthServerUri() {
