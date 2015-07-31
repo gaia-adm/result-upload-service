@@ -9,10 +9,18 @@ var fs = require('fs');
 var path = require('path');
 var cnst = require('constants');
 var uuid = require('node-uuid');
+var StreamLimiter = require('../util/stream-limiter');
 
 var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
 var baseStoragePath;
+
+// default limit is 1MB
+var DEFAULT_UPLOAD_LIMIT = 1024*1024;
+
+function getUploadLimit() {
+    return process.env.UPLOAD_LIMIT || DEFAULT_UPLOAD_LIMIT;
+}
 
 /**
  * Handles storage of data from input stream into file and notifies callback upon completion/error.
@@ -20,8 +28,15 @@ var baseStoragePath;
  * @param callback
  */
 function storeFile(is, callback) {
+    var uploadLimit = getUploadLimit();
+    var limiter = new StreamLimiter(uploadLimit);
     var os = createWriteStream();
 
+    function onLimitReached(err) {
+        is.unpipe(os);
+        cleanup();
+        callback(err);
+    }
     function onError(err) {
         is.unpipe(os);
         callback(err);
@@ -30,6 +45,8 @@ function storeFile(is, callback) {
         callback(null, os.path);
     }
     function cleanup() {
+        limiter.removeListener('error', onLimitReached);
+
         is.removeListener('error', onError);
 
         os.removeListener('error', onError);
@@ -38,6 +55,7 @@ function storeFile(is, callback) {
         os.removeListener('error', cleanup);
         os.removeListener('finish', cleanup);
     }
+    limiter.on('error', onLimitReached);
 
     is.on('error', onError);
 
@@ -47,8 +65,7 @@ function storeFile(is, callback) {
     os.on('error', cleanup);
     os.on('finish', cleanup);
 
-    // TODO: handle upload file limits
-    is.pipe(os);
+    is.pipe(limiter).pipe(os);
 }
 
 /**

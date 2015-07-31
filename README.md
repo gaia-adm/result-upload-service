@@ -11,6 +11,7 @@ Configuration is limited as Docker network links/port mappings are expected to b
 - RabbitMQ server is hardcoded to amqserver:5672 -  requires Docker network link for "amqserver"
     - credentials are configured via AMQ_USER and AMQ_PASSWORD environment variables - temporary, we need to have a service for this
 - use REST_STACKTRACE=true environment property to enable sending stacktraces on REST in case of error
+- file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 1MB
 
 ## Public REST
 - POST /result-upload/rest/v1/upload-data - used to send content to be processed
@@ -44,5 +45,5 @@ When result-upload-service starts, it will create unique directory in /upload wh
 
 ## Known issues
 - we don't handle reconnection to RabbitMQ, handle AMQ channel recreation
-- no file size limits, file storage could be more optimized (do not store all files in one directory), separation by tenantId (each tenant different directory - need to know tenantId)
+- file storage could be more optimized (do not store all files in one directory), separation by tenantId (each tenant different directory - need to know tenantId)
 - support "multipart/mixed" Content-Type and batched uploads - they eliminate network latency. Could be significant when sending many small files (events).
