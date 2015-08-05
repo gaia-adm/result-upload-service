@@ -15,8 +15,8 @@ var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
 var baseStoragePath;
 
-// default limit is 1MB
-var DEFAULT_UPLOAD_LIMIT = 1024*1024;
+// default limit is 5MB
+var DEFAULT_UPLOAD_LIMIT = 5024*1024;
 
 function getUploadLimit() {
     return process.env.UPLOAD_LIMIT || DEFAULT_UPLOAD_LIMIT;
@@ -33,12 +33,19 @@ function storeFile(is, callback) {
     var os = createWriteStream();
 
     function onLimitReached(err) {
-        is.unpipe(os);
+        is.unpipe(limiter);
+        limiter.unpipe(os);
         cleanup();
-        callback(err);
+        // continue reading even though the data will be thrown away. Destroying is would result in socket exception on client.
+        is.resume();
+        is.once('end', function() {
+            // wait until all data has been read
+            callback(err);
+        });
     }
     function onError(err) {
-        is.unpipe(os);
+        is.unpipe(limiter);
+        limiter.unpipe(os);
         callback(err);
     }
     function onFinish() {
