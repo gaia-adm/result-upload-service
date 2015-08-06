@@ -6,6 +6,7 @@
 
 var log4js = require('log4js');
 var fs = require('fs');
+var async = require('async');
 var path = require('path');
 var cnst = require('constants');
 var uuid = require('node-uuid');
@@ -30,12 +31,16 @@ function getUploadLimit() {
 function storeFile(is, callback) {
     var uploadLimit = getUploadLimit();
     var limiter = new StreamLimiter(uploadLimit);
-    var os = createWriteStream();
+    var os; // set once output stream is created
+    createWriteStream(onStreamCreated);
 
-    function onLimitReached(err) {
+    function onError(err) {
+        cleanup();
         is.unpipe(limiter);
         limiter.unpipe(os);
-        cleanup();
+        os.end();
+        // delete incomplete file
+        unlinkFile(os.path);
         // continue reading even though the data will be thrown away. Destroying is would result in socket exception on client.
         is.resume();
         is.once('end', function() {
@@ -43,16 +48,11 @@ function storeFile(is, callback) {
             callback(err);
         });
     }
-    function onError(err) {
-        is.unpipe(limiter);
-        limiter.unpipe(os);
-        callback(err);
-    }
     function onFinish() {
         callback(null, os.path);
     }
     function cleanup() {
-        limiter.removeListener('error', onLimitReached);
+        limiter.removeListener('error', onError);
 
         is.removeListener('error', onError);
 
@@ -62,26 +62,77 @@ function storeFile(is, callback) {
         os.removeListener('error', cleanup);
         os.removeListener('finish', cleanup);
     }
-    limiter.on('error', onLimitReached);
+    function onStreamCreated(err, osp) {
+        if (err) {
+            callback(err);
+        } else {
+            os = osp;
+            limiter.on('error', onError);
 
-    is.on('error', onError);
+            is.on('error', onError);
 
-    os.on('error', onError);
-    os.on('finish', onFinish);
+            os.on('error', onError);
+            os.on('finish', onFinish);
 
-    os.on('error', cleanup);
-    os.on('finish', cleanup);
+            os.on('error', cleanup);
+            os.on('finish', cleanup);
 
-    is.pipe(limiter).pipe(os);
+            is.pipe(limiter).pipe(os);
+        }
+    }
 }
 
 /**
- * Creates write stream. File will have unique name.
- * @returns output stream
+ * Unlinks file asynchronously.
+ *
+ * @param path file path
  */
-function createWriteStream() {
-    // TODO: handle uuid collision?
-    return fs.createWriteStream(generateFilename(), {flags: RDWR_EXCL, mode: 600});
+function unlinkFile(path) {
+    fs.unlink(path, function(err) {
+        if (err) {
+            logger.error(err, 'Failed to unlink ' + path);
+        }
+    });
+}
+
+/**
+ * Creates write stream. File will have a unique name.
+ * @param callback function that will receive write stream
+ */
+function createWriteStream(callback) {
+    var COUNTER_LIMIT = 5;
+    var counter = 0;
+    var os = null;
+
+    function createStreamInternal(innerCb) {
+        counter++;
+        var path = generateFilename();
+        fs.open(path, RDWR_EXCL, 600, function(err, fd) {
+            if (err) {
+                if (err.code === 'EEXIST') {
+                    // do nothing, invocation will be repeated
+                    innerCb();
+                } else {
+                    innerCb(err);
+                }
+            } else {
+                // file is ok, create stream
+                os = fs.createWriteStream(path, {flags: RDWR_EXCL, mode: 600, fd: fd});
+                innerCb();
+            }
+        });
+    }
+    async.doWhilst(createStreamInternal, function test() {
+        return (os === null && counter < COUNTER_LIMIT);
+    }, function onEnd(err) {
+        if (err) {
+            callback(err);
+        } else if (os === null) {
+            callback(new Error('Failed to create unique file'));
+        } else {
+            callback(null, os);
+        }
+    });
 }
 
 /**
