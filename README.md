@@ -11,7 +11,7 @@ Configuration is limited as Docker network links/port mappings are expected to b
 - RabbitMQ server is hardcoded to amqserver:5672 -  requires Docker network link for "amqserver"
     - credentials are configured via AMQ_USER and AMQ_PASSWORD environment variables - temporary, we need to have a service for this
 - use REST_STACKTRACE=true environment property to enable sending stacktraces on REST in case of error
-- file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 5MB
+- file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 50MB
 
 ## Public REST
 - POST /result-upload/rest/v1/upload-data - used to send content to be processed

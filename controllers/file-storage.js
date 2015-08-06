@@ -15,8 +15,8 @@ var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
 var baseStoragePath;
 
-// default limit is 5MB
-var DEFAULT_UPLOAD_LIMIT = 5024*1024;
+// default limit is 50MB
+var DEFAULT_UPLOAD_LIMIT = 50*1024*1024;
 
 function getUploadLimit() {
     return process.env.UPLOAD_LIMIT || DEFAULT_UPLOAD_LIMIT;
