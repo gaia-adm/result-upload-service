@@ -8,6 +8,8 @@ test:
   override:
     - docker run -d -e RABBITMQ_PASS="mypass" --name rabbitmq gaiaadm/rabbitmq; sleep 10
     - docker run -d -u jetty --name sts gaiaadm/sts; sleep 10
+    # run jshint
+    - docker run --name jshint-runner gaiaadm/result-upload-service:$BUILD_TAG grunt jshint
     # run system tests
     - docker run -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:amqserver --link sts:authserver --name system-test-runner gaiaadm/result-upload-service:$BUILD_TAG grunt system
     - docker cp system-test-runner:/src/system-test-results.xml $CIRCLE_TEST_REPORTS
