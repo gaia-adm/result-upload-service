@@ -16,7 +16,7 @@ var contentTypeParser = require('content-type');
 var logger = log4js.getLogger('file-upload.js');
 // REST endpoints handling data upload
 
-router.post('/v1/upload-data', function(req, res) {
+router.post('/upload-data', function(req, res) {
     var contentType = req.get('Content-Type');
     logger.debug('[x] Request ' + req.originalUrl);
     if (req.is('multipart/mixed')) {

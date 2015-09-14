@@ -14,7 +14,7 @@ Configuration is limited as Docker network links/port mappings are expected to b
 - file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 50MB
 
 ## Public REST
-- POST /result-upload/rest/v1/upload-data - used to send content to be processed
+- POST /result-upload/v1/upload-data - used to send content to be processed
     - supports Content-Type "application/*" and "text/*"
     - metadata is transported in query parameters. The following metadata is required: metric, category. All query parameters are passed to result processor.
     - responds with 200 OK if the file was accepted and its guaranteed it will be processed

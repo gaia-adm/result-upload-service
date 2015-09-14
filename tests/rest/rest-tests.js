@@ -11,7 +11,7 @@ var randomstring = require("randomstring");
 var service_hostname = process.env.SERVICE_HOST || 'localhost';
 var service_port = process.env.SERVICE_PORT || 8080;
 
-describe('/result-upload/rest/v1/upload-data tests', function() {
+describe('/result-upload/v1/upload-data tests', function() {
     describe('OAuth authorization', function() {
         it('should return 400 when no access token is present', function(done) {
             var options = {
@@ -275,7 +275,7 @@ function getAmqServer() {
 }
 
 function getServiceUri() {
-    return 'http://' + service_hostname + ':' + service_port + '/result-upload/rest/v1/upload-data';
+    return 'http://' + service_hostname + ':' + service_port + '/result-upload/v1/upload-data';
 }
 
 function getAuthServerUri() {
