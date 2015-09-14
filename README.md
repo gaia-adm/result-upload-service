@@ -39,7 +39,7 @@ For building image for development purposes, distribution/dev/Dockerfile can be 
 ## Running
 
 Execute:
-- docker run -d -p 9006:8080 -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e STORAGE_PATH="/upload" -v "/tmp:/upload" --link rabbitmq:rabbitmq --link sts:sts --name result-upload-service gaiaadm/result-upload-service:0.1
+- docker run -d -p 9006:8080 -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e STORAGE_PATH="/upload" -v "/tmp:/upload" --link rabbitmq:rabbitmq --link sts:sts --name result-upload-service gaiaadm/result-upload-service
 
 When result-upload-service starts, it will create unique directory in /upload where uploaded files can be found. This directory can be found in log. For development purposes usage of /tmp is sufficient. For production it needs to be NFSv4 volume. Linking requires knowledge of container name/id we are linking to (i.e "sts", "rabbitmq" in example).
 
