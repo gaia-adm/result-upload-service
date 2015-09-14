@@ -6,10 +6,10 @@ Result Upload Service offers a public REST endpoint for sending unprocessed data
 
 Configuration is limited as Docker network links/port mappings are expected to be used:
 - server port is hardcoded to 8080 - not relevant, real port is decided by Docker port mapping
-- auth server is hardcoded to authserver:AUTH_PORT - requires Docker network link for "authserver", default port is 8080
+- auth server must be specified using AUTH_SERVER env variable in the form "hostname:port"
 - file storage path is set via STORAGE_PATH environment variable. In production it will be NFSv4 volume mounted in Docker
-- RabbitMQ server is hardcoded to amqserver:5672 -  requires Docker network link for "amqserver"
-    - credentials are configured via AMQ_USER and AMQ_PASSWORD environment variables - temporary, we need to have a service for this
+- RabbitMQ server must be specified using AMQ_SERVER env variable in the form "hostname:port"
+    - credentials are configured via AMQ_USER and AMQ_PASSWORD environment variables - temporary, we need to have a service for this. AMQ_PASSWORD is optional
 - use REST_STACKTRACE=true environment property to enable sending stacktraces on REST in case of error
 - file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 50MB
 
@@ -32,14 +32,14 @@ Gruntfile.js is used for running tests, JSHint, JSDoc.
 
 For building production image distribution/release/Dockerfile is used. Local shell script setup.sh is used to execute statements requiring proxy (i.e npm install).
 Examples:
-- docker build -t gaiaadm/result-upload-service:0.1 -f distribution/release/Dockerfile .
+- docker build -t gaiaadm/result-upload-service -f distribution/release/Dockerfile .
 
 For building image for development purposes, distribution/dev/Dockerfile can be used. The dev image is meant to be used for starting "nodemon server.js" which will automatically reload Node.js server after file change. The dev image doesn't start node.js automaticlly, instead it just starts shell. It also expects npm dependencies are already available. In dev environment one would setup mapping of "/src" to host file system.
 
 ## Running
 
 Execute:
-- docker run -d -p 9006:8080 -e AMQ_USER="admin" -e AMQ_PASSWORD="mypass" -e STORAGE_PATH="/upload" -v "/tmp:/upload" --link rabbitmq:amqserver --link sts:authserver --name result-upload-service gaiaadm/result-upload-service:0.1
+- docker run -d -p 9006:8080 -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e STORAGE_PATH="/upload" -v "/tmp:/upload" --link rabbitmq:rabbitmq --link sts:sts --name result-upload-service gaiaadm/result-upload-service:0.1
 
 When result-upload-service starts, it will create unique directory in /upload where uploaded files can be found. This directory can be found in log. For development purposes usage of /tmp is sufficient. For production it needs to be NFSv4 volume. Linking requires knowledge of container name/id we are linking to (i.e "sts", "rabbitmq" in example).
 

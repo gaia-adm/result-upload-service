@@ -11,9 +11,6 @@ var randomstring = require("randomstring");
 var service_hostname = process.env.SERVICE_HOST || 'localhost';
 var service_port = process.env.SERVICE_PORT || 8080;
 
-var auth_hostname = 'authserver';
-var auth_port = process.env.AUTH_PORT || 8080;
-
 describe('/result-upload/rest/v1/upload-data tests', function() {
     describe('OAuth authorization', function() {
         it('should return 400 when no access token is present', function(done) {
@@ -260,24 +257,33 @@ describe('/result-upload/rest/v1/upload-data tests', function() {
             if (!process.env.AMQ_USER) {
                     throw new Error('AMQ_USER environment variable is not specified');
             }
-            if (!process.env.AMQ_PASSWORD) {
-                    throw new Error('AMQ_PASSWORD environment variable is not specified');
-            }
-            var amq_hostname = process.env.AMQ_HOSTNAME || 'amqserver';
-            var amq_port = process.env.AMQ_PORT || '5672';
-
-            return 'amqp://' + process.env.AMQ_USER + ':' + process.env.AMQ_PASSWORD +
-                        '@' + amq_hostname + ':' + amq_port + '?frameMax=0x1000&heartbeat=30';
+            var pwd = process.env.AMQ_PASSWORD ? process.env.AMQ_PASSWORD : '';
+            return 'amqp://' + process.env.AMQ_USER + ':' + pwd +
+                        '@' + getAmqServer() + '?frameMax=0x1000&heartbeat=30';
         }
     });
 });
+
+/**
+ * Returns hostname:port of RabbitMQ server.
+ */
+function getAmqServer() {
+    if (!process.env.AMQ_SERVER) {
+        throw new Error('AMQ_SERVER environment variable is not specified');
+    }
+    return process.env.AMQ_SERVER;
+}
 
 function getServiceUri() {
     return 'http://' + service_hostname + ':' + service_port + '/result-upload/rest/v1/upload-data';
 }
 
 function getAuthServerUri() {
-    return URI().protocol('http').hostname(auth_hostname).port(auth_port);
+    if (!process.env.AUTH_SERVER) {
+        throw new Error('AUTH_SERVER environment variable is not specified');
+    }
+    var auth_comps = process.env.AUTH_SERVER.split(':');
+    return URI().protocol('http').hostname(auth_comps[0]).port(auth_comps[1]);
 }
 
 function createTenant(callback) {

@@ -17,8 +17,10 @@ var logger = log4js.getLogger('auth.js');
  * @returns {string}
  */
 function getAuthCheckUri() {
-    var port = process.env.AUTH_PORT || 8080;
-    return 'http://authserver:' + port + '/sts/oauth/check_token';
+    if (!process.env.AUTH_SERVER) {
+        throw new Error('AUTH_SERVER environment variable is not specified');
+    }
+    return 'http://' + process.env.AUTH_SERVER + '/sts/oauth/check_token';
 }
 
 /**
