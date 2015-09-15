@@ -4,7 +4,7 @@ CircleCI build status: [![Circle CI](https://circleci.com/gh/gaia-adm/result-upl
 
 Result Upload Service offers a public REST endpoint for sending unprocessed data to GAIA from which measures need to be extracted. Data can be in any format supported by GAIA result processors. Typically it will be XML/JSON data - builds, tests, issue changes extracted from public REST of ALM, Jenkins, JIRA etc.
 
-Configuration is limited as Docker network links/port mappings are expected to be used:
+Configuration options:
 - server port is hardcoded to 8080 - not relevant, real port is decided by Docker port mapping
 - auth server must be specified using AUTH_SERVER env variable in the form "hostname:port"
 - file storage path is set via STORAGE_PATH environment variable. In production it will be NFSv4 volume mounted in Docker
@@ -12,6 +12,7 @@ Configuration is limited as Docker network links/port mappings are expected to b
     - credentials are configured via AMQ_USER and AMQ_PASSWORD environment variables - temporary, we need to have a service for this. AMQ_PASSWORD is optional
 - use REST_STACKTRACE=true environment property to enable sending stacktraces on REST in case of error
 - file size limit can be configured via UPLOAD_LIMIT environment variable. Default is 50MB
+- log level can be specified using LOG_LEVEL. TRACE, DEBUG, INFO, WARN, ERROR, FATAL are valid values.
 
 ## Public REST
 - POST /result-upload/v1/upload-data - used to send content to be processed
