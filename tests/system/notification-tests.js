@@ -11,7 +11,7 @@ describe('notification tests', function() {
     var amqQueue;
 
     before(function(done) {
-        notification.initAmq().done(function onOk() {
+        notification.initAmq(false).done(function onOk() {
             done();
         }, function onError(err) {
             assert.fail(err, null, 'Failed to init notification module');
@@ -42,7 +42,9 @@ describe('notification tests', function() {
             done();
         }).then(function() {
             // send notification
-            notification.send(null, {dataType: dataType, contentType: 'text/plain'}, function(err) {
+            var ok = notification.send(null, {dataType: dataType, contentType: 'text/plain'});
+            ok.catch(function onError(err) {
+                console.error(err.stack);
                 assert.notOk(err, 'No error was expected');
             });
         });

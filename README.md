@@ -45,6 +45,5 @@ Execute:
 When result-upload-service starts, it will create unique directory in /upload where uploaded files can be found. This directory can be found in log. For development purposes usage of /tmp is sufficient. For production it needs to be NFSv4 volume. Linking requires knowledge of container name/id we are linking to (i.e "sts", "rabbitmq" in example).
 
 ## Known issues
-- we don't handle reconnection to RabbitMQ, handle AMQ channel recreation
 - file storage could be more optimized (do not store all files in one directory), separation by tenantId (each tenant different directory - need to know tenantId)
 - support "multipart/mixed" Content-Type and batched uploads - they eliminate network latency. Could be significant when sending many small files (events).

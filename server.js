@@ -17,6 +17,8 @@ var grace = require('grace');
 var express = require('express'), app = express();
 var notification = require('./controllers/notification');
 var errorReporter = require('./util/error-reporter');
+var errorUtils = require('./util/error-utils.js');
+var getFullError = errorUtils.getFullError;
 var when = require('when');
 var auth = require('./middlewares/auth');
 
@@ -50,7 +52,7 @@ function defaultErrorHandler(err, req, res, next) {
     if (!(err instanceof Error)) {return next(err);}
 
     logger.error('Unhandled exception in REST call \'' + req.path + '\'');
-    logger.error(err.stack);
+    logger.error(getFullError(err));
     errorReporter.reportError(res, err);
 }
 
@@ -59,14 +61,14 @@ function defaultErrorHandler(err, req, res, next) {
  */
 function initServer() {
     // add any async initializations here
-    when.all([notification.initAmq()]).done(function onOk() {
+    when.all([notification.initAmq(true)]).catch(function(err) {
+        logger.error(getFullError(err));
+    }).finally(function() {
+        // we listen also if connection to MQ is not available (disconnect can happen at any time after connect too
+        // and this would lead to the same situation)
         app.listen(PORT, function() {
             logger.info('Running on http://localhost:' + PORT);
         });
-    }, function onError(err) {
-        logger.error('Result upload service initialization failure');
-        logger.error(err.stack);
-        graceApp.shutdown(1);
     });
 }
 
@@ -75,7 +77,7 @@ graceApp.on('start', function () {
 });
 
 graceApp.on('error', function(err){
-    logger.error(err);
+    logger.error(getFullError(err));
 });
 
 graceApp.on('shutdown', function(cb) {

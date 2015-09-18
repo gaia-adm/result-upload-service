@@ -8,6 +8,7 @@ var log4js = require('log4js');
 var oauthserver = require('oauth2-server');
 var request = require('request');
 var VError = require('verror');
+var WError = VError.WError;
 
 var logger = log4js.getLogger('auth.js');
 
@@ -41,8 +42,7 @@ function getOAuthAccessToken(bearerToken, callback) {
     };
     request(options, function(err, response, body) {
         if (err) {
-            logger.error(err.stack);
-            callback(new VError(err, 'Failed to verify bearer token due to error'));
+            callback(new WError(err, 'Failed to verify bearer token due to error'));
         } else {
             if (response.statusCode >= 200 && response.statusCode < 300) {
                 var responseObject = JSON.parse(body);

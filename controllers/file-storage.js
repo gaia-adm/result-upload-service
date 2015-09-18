@@ -11,6 +11,10 @@ var path = require('path');
 var cnst = require('constants');
 var uuid = require('node-uuid');
 var StreamLimiter = require('../util/stream-limiter');
+var VError = require('verror');
+var WError = VError.WError;
+var errorUtils = require('../util/error-utils.js');
+var getFullError = errorUtils.getFullError;
 
 var logger = log4js.getLogger('file-storage.js');
 var RDWR_EXCL = cnst.O_CREAT | cnst.O_TRUNC | cnst.O_RDWR | cnst.O_EXCL;
@@ -90,7 +94,7 @@ function storeFile(is, callback) {
 function unlinkFile(path) {
     fs.unlink(path, function(err) {
         if (err) {
-            logger.error(err, 'Failed to unlink ' + path);
+            logger.error(getFullError(new WError(err, 'Failed to unlink ' + path)));
         }
     });
 }
@@ -166,3 +170,4 @@ initFileStorage();
  * Handles storage of data from input stream into file and notifies callback upon completion/error.
  */
 exports.storeFile = storeFile;
+exports.unlinkFile = unlinkFile;

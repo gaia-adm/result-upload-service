@@ -12,6 +12,8 @@ var notification = require('./notification');
 var errorReporter = require('../util/error-reporter');
 var validate = require("validate.js");
 var contentTypeParser = require('content-type');
+var errorUtils = require('../util/error-utils.js');
+var getFullError = errorUtils.getFullError;
 
 var logger = log4js.getLogger('file-upload.js');
 // REST endpoints handling data upload
@@ -91,18 +93,20 @@ function validateMetadata(contentMetadata) {
 function receiveFile(processingMetadata, contentMetadata, req, res) {
     fileStorage.storeFile(req, function(err, path) {
         if (err) {
-            logger.error(err.stack);
+            logger.error(getFullError(err));
             errorReporter.reportError(res, err);
         } else {
             processingMetadata.path = path;
-            notification.send(processingMetadata, contentMetadata, function(err) {
-                if (err) {
-                    logger.error(err.stack);
-                    errorReporter.reportError(res, err);
-                } else {
-                    res.status(HttpStatus.OK);
-                    res.send();
-                }
+            var ok = notification.send(processingMetadata, contentMetadata);
+            ok.done(function onOk() {
+                logger.debug('Notified data processors about file ' + path);
+                res.status(HttpStatus.OK);
+                res.send();
+            }, function onError(err) {
+                // failed to send notification
+                fileStorage.unlinkFile(path); // get rid of the file
+                logger.error(getFullError(err));
+                errorReporter.reportError(res, err);
             });
         }
     });
