@@ -42,14 +42,14 @@ function getOAuthAccessToken(bearerToken, callback) {
     };
     request(options, function(err, response, body) {
         if (err) {
-            callback(new WError(err, 'Failed to verify bearer token due to error'));
+            callback(new VError(err, 'Failed to verify bearer token due to error')); // use VError since this gets logged by oauth2server
         } else {
             if (response.statusCode >= 200 && response.statusCode < 300) {
                 var responseObject = JSON.parse(body);
                 callback(false, {accessToken: bearerToken, expires: null, tenantId: responseObject.tenantId});
             } else {
-                logger.warn('Unauthorized token \'' + bearerToken + '\', status code '+ response.statusCode);
-                logger.warn(body);
+                logger.debug('Unauthorized token \'' + bearerToken + '\', status code '+ response.statusCode);
+                logger.debug(body);
                 callback();
             }
         }
@@ -59,7 +59,7 @@ function getOAuthAccessToken(bearerToken, callback) {
 var oauth = oauthserver({
   model: {getAccessToken: getOAuthAccessToken},
   grants: [], // we don't provider access tokens, just verify
-  debug: true
+  debug: logger.error.bind(logger) // used by oauth2server to log errors
 });
 
 /** Express authorization handler. To be registered in express application. */
