@@ -8,7 +8,6 @@ var log4js = require('log4js');
 var oauthserver = require('oauth2-server');
 var request = require('request');
 var VError = require('verror');
-var WError = VError.WError;
 
 var logger = log4js.getLogger('auth.js');
 
