@@ -12,6 +12,7 @@ var service_hostname = process.env.SERVICE_HOST || 'localhost';
 var service_port = process.env.SERVICE_PORT || 8080;
 
 describe('/result-upload/v1/upload-data tests', function() {
+    this.timeout(5000); // higher timeout than default 2s is needed
     describe('OAuth authorization', function() {
         it('should return 400 when no access token is present', function(done) {
             var options = {
