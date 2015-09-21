@@ -95,7 +95,7 @@ function initChannel(conn) {
  * Initializes connection to RabbitMQ and returns promise to allow waiting for initialization completion.
  * @returns promise
  */
-function initAmqConnection() {
+function initAmqConnection(handleReconnect) {
     var credentials = getAmqCredentials();
     var url = 'amqp://' + credentials.username + ':' + credentials.password +
                 '@' + getAmqServer() + '?frameMax=0x1000&heartbeat=30';
@@ -109,7 +109,9 @@ function initAmqConnection() {
 
         function onError(err) {
             logger.error(getFullError(new WError(err, 'Connection reached error state')));
-            scheduleReconnect();
+            if (handleReconnect) {
+                scheduleReconnect();
+            }
         }
 
         function cleanup() {
@@ -135,7 +137,7 @@ function initAmqConnection() {
 }
 
 function initAmq(handleReconnect) {
-    var ok = initAmqConnection();
+    var ok = initAmqConnection(handleReconnect);
     return ok.catch(function(err) {
         if (handleReconnect) {
             logger.error(getFullError(new WError(err, 'Failed to initialize RabbitMQ connection')));
