@@ -84,11 +84,7 @@ function initChannel(conn) {
             logger.debug('Exchange \'result-upload\' has been asserted into existence');
         });
     });
-    return ok.catch(function(err) {
-        // in case assertExchange causes channel error this results in duplicate error message as onError logs as well
-        // this doesn't happen in case of channel error during normal operation
-        logger.error(getFullError(new WError(err, 'Failed to initialize channel')));
-    });
+    return ok;
 }
 
 /**
@@ -140,7 +136,7 @@ function initAmq(handleReconnect) {
     var ok = initAmqConnection(handleReconnect);
     return ok.catch(function(err) {
         if (handleReconnect) {
-            logger.error(getFullError(new WError(err, 'Failed to initialize RabbitMQ connection')));
+            logger.error(getFullError(new WError(err, 'Failed to initialize RabbitMQ connection or channel')));
             scheduleReconnect();
         } else {
             throw err;
@@ -170,6 +166,8 @@ function scheduleRecreateChannel() {
 
 function scheduleReconnect() {
     if (recreateChannelTimerId) {
+        reconnectCounter--;
+        reconnectCounter = Math.max(reconnectCounter, 0);
         clearTimeout(recreateChannelTimerId);
         recreateChannelTimerId = null;
     }
