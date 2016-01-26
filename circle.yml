@@ -16,7 +16,7 @@ dependencies:
     - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BRANCH
 test:
   override:
-    - docker run -d --name -e "RABBITMQ_PASS=admin" rabbitmq gaiaadm/rabbitmq; sleep 10
+    - docker run -d --name rabbitmq -e "RABBITMQ_PASS=admin" gaiaadm/rabbitmq; sleep 10
     # run etcd since we are not on coreos
     - docker run -d --name etcd microbox/etcd:2.1.1 -name etcd --listen-client-urls 'http://0.0.0.0:4001' --advertise-client-urls 'http://0.0.0.0:4001'; sleep 5
     - docker run -d -u jetty --link etcd:etcd -e etcdUrl="http://etcd:4001" --name sts gaiaadm/sts; sleep 10
