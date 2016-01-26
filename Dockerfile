@@ -8,4 +8,11 @@ RUN npm install -g nodemon grunt
 # Set the working directory
 WORKDIR /src
 
-CMD ["/bin/bash"]
+# copy all sources
+COPY . /src
+
+RUN npm install
+
+EXPOSE  8080
+
+CMD ["node", "/src/server.js"]
