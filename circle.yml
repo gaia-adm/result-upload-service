@@ -6,12 +6,17 @@ machine:
   services:
     - docker
 dependencies:
+  pre:
+    - sudo apt-get update && sudo apt-get install jq openssl curl
+    # download update_service script
+    - curl -LO https://raw.githubusercontent.com/gaia-adm/gaia-fleet/master/update_service.sh && chmod +x update_service.sh
   override:
     - docker build -f distribution/release/Dockerfile -t gaiaadm/result-upload-service .
-    - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BUILD_NUM
+    - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH
+    - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BRANCH
 test:
   override:
-    - docker run -d --name rabbitmq gaiaadm/rabbitmq; sleep 10
+    - docker run -d --name -e "RABBITMQ_PASS=admin" rabbitmq gaiaadm/rabbitmq; sleep 10
     # run etcd since we are not on coreos
     - docker run -d --name etcd microbox/etcd:2.1.1 -name etcd --listen-client-urls 'http://0.0.0.0:4001' --advertise-client-urls 'http://0.0.0.0:4001'; sleep 5
     - docker run -d -u jetty --link etcd:etcd -e etcdUrl="http://etcd:4001" --name sts gaiaadm/sts; sleep 10
@@ -28,12 +33,12 @@ test:
     - docker cp rest-test-runner:/src/rest-test-results.xml $CIRCLE_TEST_REPORTS
     - docker cp rest-test-runner:/src/rest-test-results.txt $CIRCLE_ARTIFACTS
 deployment:
-  hub:
-    branch: master
+  continuous:
+    branch: [master, develop, /feature_.*/]
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push gaiaadm/result-upload-service
-general:
-  branches:
-    only:
-      - master
+      - ./update_service.sh -t $CIRCLE_BRANCH -b $CIRCLE_BUILD_NUM -f result-upload-service.service -n result-upload-service
+notify:
+  webhooks:
+    - url: http://beta.gaiahub.io:88/wh/5a866f9b-98c9-438d-a8d4-53cf4ae9599c/4c310c8e220ee9bead74eece42ce0e109fd3535e

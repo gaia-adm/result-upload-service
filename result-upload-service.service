@@ -1,0 +1,67 @@
+# Copyright 2015 HP Software
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[Unit]
+Description=Gaia Result Upload Service
+Documentation=https://github.com/gaia-adm/result-upload-service
+
+After=registrator.service
+Wants=registrator.service
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+# Large start timeout is to allow for pulling down Docker images from Registry
+TimeoutStartSec=20min
+TimeoutStopSec=15
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Restart policy
+Restart=on-failure
+RestartSec=20s
+
+# Pre-start and Start
+## Directives with "=-" are allowed to fail without consequence
+ExecStartPre=-/bin/mkdir /upload
+ExecStartPre=-/usr/bin/docker stop result-upload-service
+ExecStartPre=-/usr/bin/docker rm result-upload-service
+ExecStartPre=/usr/bin/docker run --rm=true -v /opt/bin:/target gaiaadm/volume-tools-${ENVIRON_LOCATION}
+ExecStartPre=/opt/bin/gaia-mount.sh result-upload-${ENVIRON}
+
+ExecStart=/bin/bash -a -c '/usr/bin/docker run \
+--name result-upload-service \
+-p 9006:8080 \
+-e AMQ_USER=admin \
+-e AMQ_PASSWORD=admin \
+-e AMQ_SERVER=rabbitmq.skydns.local:5672 \
+-e AUTH_SERVER=sts.skydns.local:8080 \
+-e SERVICE_NAME=result-upload-service \
+-e SERVICE_TAGS=master \
+-e STORAGE_PATH=/upload \
+-e LOG_LEVEL=INFO \
+-v $(/opt/bin/gaia-get-mount-path.sh result-upload-${ENVIRON}):/upload \
+gaiaadm/result-upload-service'
+
+# Stop
+ExecStop=/usr/bin/docker stop result-upload-service
+ExecStop=-/opt/bin/gaia-unmount.sh result-upload-${ENVIRON}
+ExecStopPost=-/opt/bin/gaia-unmount.sh result-upload-${ENVIRON}
+
+[Install]
+WantedBy=multi-user.target

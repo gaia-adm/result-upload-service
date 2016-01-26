@@ -5,3 +5,4 @@ doc
 node_modules
 circle.yaml
 README.md
+result-upload-service.service
