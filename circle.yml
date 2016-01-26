@@ -23,13 +23,13 @@ test:
     # run jshint
     - docker run --name jshint-runner gaiaadm/result-upload-service grunt jshint
     # run system tests
-    - docker run -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:rabbitmq --link sts:sts --name system-test-runner gaiaadm/result-upload-service grunt system
+    - docker run -e AMQ_USER="admin" -e AMQ_PASSWORD="admin" -e AMQ_SERVER="rabbitmq:5672" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:rabbitmq --link sts:sts --name system-test-runner gaiaadm/result-upload-service grunt system
     - docker cp system-test-runner:/src/system-test-results.xml $CIRCLE_TEST_REPORTS
     - docker cp system-test-runner:/src/system-test-results.txt $CIRCLE_ARTIFACTS
     # run result-upload-service as demon for rest tests
-    - docker run -d -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:rabbitmq --link sts:sts --name result-upload-service gaiaadm/result-upload-service; sleep 10
+    - docker run -d -e AMQ_USER="admin" -e AMQ_PASSWORD="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link rabbitmq:rabbitmq --link sts:sts --name result-upload-service gaiaadm/result-upload-service; sleep 10
     # run rest tests
-    - docker run -e AMQ_USER="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e SERVICE_HOST="result-upload-service" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link result-upload-service:result-upload-service --link rabbitmq:rabbitmq --link sts:sts --name rest-test-runner gaiaadm/result-upload-service grunt rest
+    - docker run -e AMQ_USER="admin" -e AMQ_PASSWORD="admin" -e AMQ_SERVER="rabbitmq:5672" -e AUTH_SERVER="sts:8080" -e SERVICE_HOST="result-upload-service" -e STORAGE_PATH="/tmp" -v "/tmp:/tmp" --link result-upload-service:result-upload-service --link rabbitmq:rabbitmq --link sts:sts --name rest-test-runner gaiaadm/result-upload-service grunt rest
     - docker cp rest-test-runner:/src/rest-test-results.xml $CIRCLE_TEST_REPORTS
     - docker cp rest-test-runner:/src/rest-test-results.txt $CIRCLE_ARTIFACTS
 deployment:
