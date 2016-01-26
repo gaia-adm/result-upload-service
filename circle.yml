@@ -11,7 +11,7 @@ dependencies:
     # download update_service script
     - curl -LO https://raw.githubusercontent.com/gaia-adm/gaia-fleet/master/update_service.sh && chmod +x update_service.sh
   override:
-    - docker build -f distribution/release/Dockerfile -t gaiaadm/result-upload-service .
+    - docker build -t gaiaadm/result-upload-service .
     - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH
     - docker tag gaiaadm/result-upload-service gaiaadm/result-upload-service:$CIRCLE_BRANCH
 test:
