@@ -1,7 +1,4 @@
-FROM gaiaadm/nodejs:0.12.6
-
-ARG http_proxy
-ARG https_proxy
+FROM gaiaadm/nodejs:4.4.7
 
 RUN npm install -g nodemon grunt
 
