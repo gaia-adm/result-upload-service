@@ -41,7 +41,7 @@ RestartSec=20s
 ExecStartPre=-/bin/mkdir /upload
 ExecStartPre=-/usr/bin/docker stop result-upload-service
 ExecStartPre=-/usr/bin/docker rm result-upload-service
-ExecStartPre=/usr/bin/docker run --rm=true -v /opt/bin:/target gaiaadm/volume-tools-${ENVIRON_LOCATION}
+ExecStartPre=/usr/bin/docker run --rm=true -v /opt/bin:/target gaiaadm/volume-tools-${ENVIRON_LOCATION}:0.2.0
 ExecStartPre=/opt/bin/gaia-mount.sh result-upload-${ENVIRON}
 
 ExecStart=/bin/bash -a -c '/usr/bin/docker run \
